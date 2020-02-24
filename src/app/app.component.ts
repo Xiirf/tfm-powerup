@@ -73,14 +73,17 @@ export class AppComponent implements OnInit {
               return [{
                 icon: this.BLACK_ROCKET_ICON,
                 text: 'Accept Auth',
-                callback: this.showIframeAuth(t),
+                // tslint:disable-next-line:no-shadowed-variable
+                callback:  (t) => {
+                  this.showIframeAuth(t);
+                }
               }];
             } else {
               return [{
                 icon: this.BLACK_ROCKET_ICON,
                 text: 'Next Task',
-                callback:  (params) => {
-                  // console.log(params.secret, params.getContext());
+                // tslint:disable-next-line:no-shadowed-variable
+                callback:  () => {
                   this.showIframeNext(t, token);
                 }
               }];
