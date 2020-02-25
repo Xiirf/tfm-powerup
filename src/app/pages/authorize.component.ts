@@ -16,9 +16,9 @@ export class AuthorizeComponent {
     authorize() {
         this.t.getRestApi()
         .authorize({ scope: 'read,write' })
-        .then((t) => {
+        .then(() => {
             alert('Success!');
-            t.closePopup();
+            this.t.closePopup(); // A test
         })
         .catch(TrelloPowerUp.restApiError.AuthDeniedError, () => {
             alert('Cancelled!');
