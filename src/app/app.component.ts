@@ -23,7 +23,7 @@ export class AppComponent implements OnInit {
   showIframeAuth(t) {
     return t.popup({
       title: 'Authorize to continue',
-      url: './authorize.html'
+      url: '/authorize'
     });
   }
 

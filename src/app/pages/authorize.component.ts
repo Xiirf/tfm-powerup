@@ -18,6 +18,7 @@ export class AuthorizeComponent {
         .authorize({ scope: 'read,write' })
         .then((t) => {
             alert('Success!');
+            t.closePopup();
         })
         .catch(TrelloPowerUp.restApiError.AuthDeniedError, () => {
             alert('Cancelled!');
