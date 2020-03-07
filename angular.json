@@ -3,7 +3,7 @@
   "version": 1, 
   "newProjectRoot": "projects",
   "projects": {
-    "powerUpNextTask": {
+    "tfm-powerup": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/powerUpNextTask",
+            "outputPath": "dist/tfm-powerup",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -66,18 +66,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "powerUpNextTask:build"
+            "browserTarget": "tfm-powerup:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "powerUpNextTask:build:production"
+              "browserTarget": "tfm-powerup:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "powerUpNextTask:build"
+            "browserTarget": "tfm-powerup:build"
           }
         },
         "test": {
@@ -114,15 +114,15 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "powerUpNextTask:serve"
+            "devServerTarget": "tfm-powerup:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "powerUpNextTask:serve:production"
+              "devServerTarget": "tfm-powerup:serve:production"
             }
           }
         }
       }
     }},
-  "defaultProject": "powerUpNextTask"
+  "defaultProject": "tfm-powerup"
 }
