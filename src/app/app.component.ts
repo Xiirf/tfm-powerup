@@ -12,7 +12,8 @@ export class AppComponent implements OnInit {
 
   title = 'powerUpNextTask';
   // promise = trelloPowerUp.Promise;
-  BLACK_ROCKET_ICON = 'https://cdn.glitch.com/2442c68d-7b6d-4b69-9d13-feab530aa88e%2Fglitch-icon.svg?1489773457908';
+  NEXT_TASK = 'https://i.imgur.com/5xkAn5M.png';
+  UNLOCK = 'https://i.imgur.com/mMlyvyN.png';
 
   constructor(private trelloService: TrelloService) {}
 
@@ -71,7 +72,7 @@ export class AppComponent implements OnInit {
           .then((token) => {
             if (!token) {
               return [{
-                icon: this.BLACK_ROCKET_ICON,
+                icon: this.UNLOCK,
                 text: 'Accept Auth',
                 // tslint:disable-next-line:no-shadowed-variable
                 callback:  (t) => {
@@ -80,7 +81,7 @@ export class AppComponent implements OnInit {
               }];
             } else {
               return [{
-                icon: this.BLACK_ROCKET_ICON,
+                icon: this.NEXT_TASK,
                 text: 'Next Task',
                 // tslint:disable-next-line:no-shadowed-variable
                 callback:  () => {
