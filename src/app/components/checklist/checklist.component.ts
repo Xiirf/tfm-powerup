@@ -51,11 +51,11 @@ export class CheckistComponent implements OnInit {
                                 });
                                 console.log(element);
                                 this.nextTaskConditions.push(element);
-
                               }
                             });
                           });
                           this.setTaskName(token);
+                          localStorage.setItem('nextTaskConditions', JSON.stringify(this.nextTaskConditions));
                         });
                     }
                   })
@@ -86,5 +86,6 @@ export class CheckistComponent implements OnInit {
         }
       });
     });
+    localStorage.setItem('nextTaskConditions', JSON.stringify(this.nextTaskConditions));
   }
 }
