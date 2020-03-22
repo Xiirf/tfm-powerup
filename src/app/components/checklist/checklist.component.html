@@ -1,6 +1,3 @@
-<h1>
-    Coucou!
-</h1>
 <ng-container *ngIf="(nextTaskConditions.length!==0); else noCondition" >
     <ul>
         <li *ngFor="let item of nextTaskConditions">
@@ -11,7 +8,8 @@
                     <li *ngFor="let condition of item.conditions">
                         <p>{{condition.name}}</p>
                         <label>
-                            <input type="checkbox" (change)="onCheckboxChange(condition, $event)" />
+                            <input type="checkbox" [(ngModel)]="condition.isChecked" 
+                                (change)="onCheckboxChange(condition.isChecked, condition.name, condition.choice)" />
                             {{condition.choice}}
                         </label>
                     </li>

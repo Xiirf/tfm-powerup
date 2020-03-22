@@ -7,6 +7,8 @@ import { AuthorizeComponent } from './components/authorize/authorize.component';
 import { TrelloService } from './services/trello.service';
 import { HttpClientModule, HttpClientJsonpModule } from '@angular/common/http';
 import { CheckistComponent } from './components/checklist/checklist.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
 
 @NgModule({
   declarations: [
@@ -16,6 +18,8 @@ import { CheckistComponent } from './components/checklist/checklist.component';
   ],
   imports: [
     BrowserModule,
+    FormsModule,
+    ReactiveFormsModule,
     AppRoutingModule,
     HttpClientModule,
     HttpClientJsonpModule,

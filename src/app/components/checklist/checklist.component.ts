@@ -45,8 +45,13 @@ export class CheckistComponent implements OnInit {
                         .then((conditions) => {
                           conditions.forEach(element => {
                             element.lastTask.forEach((id) => {
-                              if ((id === idList)) {
+                              if (id === idList) {
+                                element.conditions.forEach(e => {
+                                  e.isChecked = false;
+                                });
+                                console.log(element);
                                 this.nextTaskConditions.push(element);
+
                               }
                             });
                           });
@@ -71,7 +76,15 @@ export class CheckistComponent implements OnInit {
     });
   }
 
-  onCheckboxChange(condition: [], e) {
-    console.log(JSON.stringify(e));
+
+  onCheckboxChange(e, name, choice) {
+    // TODO : remplacer name && choice par id
+    this.nextTaskConditions.forEach(item => {
+      item.conditions.forEach(condition => {
+        if (condition.name === name && condition.choice === choice) {
+          condition.isChecked = e;
+        }
+      });
+    });
   }
 }
