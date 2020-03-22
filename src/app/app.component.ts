@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { TrelloService } from './services/trello.service';
-import { ConditionsService } from './services/conditions.service';
 declare let TrelloPowerUp: any;
 declare let window: any;
 
@@ -16,7 +15,7 @@ export class AppComponent implements OnInit {
   NEXT_TASK = 'https://i.imgur.com/5xkAn5M.png';
   UNLOCK = 'https://i.imgur.com/mMlyvyN.png';
 
-  constructor(private trelloService: TrelloService, private conditionsService: ConditionsService) {}
+  constructor(private trelloService: TrelloService) {}
 
   ngOnInit() {
     this.trelloInit();
@@ -83,73 +82,65 @@ export class AppComponent implements OnInit {
     return t.card('all')
       .then((card) => {
         const idCard = card.id;
-        const idList = card.idList;
         // Récupération du board actuel
-        t.board('all')
-        .then((board) => {
-          const idBoard = board.id;
-          // On récupère les listes du board actuel
-          this.trelloService.getAllListBoard(idBoard, token)
-            .then((data) => {
-              // On récupère l'index de la liste suivante (tâches suivante)
-              const index = data.findIndex(list => list.id === idList) + 1;
-              if (index < data.length) {
-                // On récupère les conditions dans la carte conditions
-                // this.getCondition(data[0], token, idList); Utiliser fonction en bas pour avancer et trouver tache
-                // checkAndSetCondition(idCard, )
-                const newListId = data[index].id;
-                // Déplacement de la carte
-                this.trelloService.moveCard(idCard, newListId, token)
-                .then((resp) => {
-                  console.log(resp);
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
-              } else {
-                t.hideCard();
-                return t.alert({
-                  message: 'Proceso terminado',
-                  duration: 6,
-                });
-              }
+        this.getNextTask()
+        .then((newListId) => {
+          this.trelloService.moveCard(idCard, newListId, token)
+            .then((resp) => {
+              console.log(resp);
             })
             .catch((error) => {
               console.log(error);
             });
+        }).catch((error) => {
+          if (!error) {
+            t.hideCard();
+            return t.alert({
+              message: 'Proceso terminado',
+              duration: 6,
+            });
+          } else {
+            console.log(error);
+            this.showModal(error, t);
+          }
         });
       });
   }
 
-  getCondition(listStart, token: string, currentListId: string) {
-    // 1 // Recup condition
-    // 2 // Regarder si les conditions requises sont effectuées
-    // 3 // MAJ checklist (ajout nouvelle) (choix eclusif)
-    return new Promise( (resolve, reject) => {
-      // const conditions = this.conditionsService.getCondition(data[0], token);
-      const idCardCondition = listStart.cards.find( elem => elem.name === 'Conditions_Data_Storage').id;
-      return this.trelloService.getComment(idCardCondition, token)
-        .then((comments) => {
-          resolve();
-          // Check conditions
-
-          // MAJ checklist
-
-          // Define next task
-          /*let nextTask = [];
-          conditions.forEach(element => {
-            const index = element.lastTask.indexOf(currentListId);
-            if (index !== -1) {
-                // check condition
-                // element.conditions.forEach()
-                // si condition ok on ajoute dans nextTask
-            }
-          });*/
-
-        })
-        .catch((error) => {
-          reject(error);
+  getNextTask() {
+    return new Promise<any>( (resolve, reject) => {
+      // Get condition and next tasks
+      const conditions = JSON.parse(localStorage.getItem('nextTaskConditions'));
+      console.log(null, conditions);
+      if (!conditions) {
+        reject(null);
+      } else if (conditions.length === 1 && conditions[0].conditions.length === 0) {
+        resolve(conditions[0].idTask);
+      } else {
+        conditions.forEach(element => {
+          if (!(element.conditions.find(condition => condition.isChecked === false))) {
+            resolve(element.idTask);
+          }
         });
+      }
+      reject('You have to end some prerequisite to have a next task !');
+    });
+  }
+
+  showModal(msg: string, t) {
+    t.modal({
+      // the url to load for the iframe
+      url: '/modal',
+      accentColor: '#F2D600',
+      args: { msg },
+      // initial height for iframe
+      height: 100, // not used if fullscreen is true
+      // whether the modal should stretch to take up the whole screen
+      fullscreen: false,
+      // optional function to be called if user closes modal (via `X` or escape, etc)
+      callback: () => console.log('Goodbye.'),
+      // optional title for header chrome
+      title: 'Impossible action'
     });
   }
 

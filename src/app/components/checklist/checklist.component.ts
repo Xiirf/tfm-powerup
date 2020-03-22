@@ -41,7 +41,9 @@ export class CheckistComponent implements OnInit {
                     const index = data.findIndex(list => list.id === idList) + 1;
                     if (index < data.length) {
                       // On récupère les conditions dans la carte conditions
-                      this.conditionsService.getCondition(data[0], token)
+                      if (!localStorage.getItem('currentTaskId') || !(localStorage.getItem('currentTaskId') === idList)
+                            || !localStorage.getItem('nextTaskConditions')) {
+                        this.conditionsService.getCondition(data[0], token)
                         .then((conditions) => {
                           conditions.forEach(element => {
                             element.lastTask.forEach((id) => {
@@ -49,14 +51,18 @@ export class CheckistComponent implements OnInit {
                                 element.conditions.forEach(e => {
                                   e.isChecked = false;
                                 });
-                                console.log(element);
                                 this.nextTaskConditions.push(element);
                               }
                             });
                           });
                           this.setTaskName(token);
-                          localStorage.setItem('nextTaskConditions', JSON.stringify(this.nextTaskConditions));
+                          this.setLocalStorage(idList);
                         });
+                      } else {
+                        this.nextTaskConditions = JSON.parse(localStorage.getItem('nextTaskConditions'));
+                      }
+                    } else {
+                      localStorage.removeItem('nextTaskConditions');
                     }
                   })
                   .catch((error) => {
@@ -72,20 +78,61 @@ export class CheckistComponent implements OnInit {
       this.trelloService.getListInformation(condition.idTask, token)
         .then((list) => {
           condition.nameTask = list.name;
+          localStorage.setItem('nextTaskConditions', JSON.stringify(this.nextTaskConditions));
         });
     });
   }
 
-
-  onCheckboxChange(e, name, choice) {
-    // TODO : remplacer name && choice par id
+  onCheckboxChange(e, isChecked, id) {
     this.nextTaskConditions.forEach(item => {
       item.conditions.forEach(condition => {
-        if (condition.name === name && condition.choice === choice) {
-          condition.isChecked = e;
+        if (condition.idUnique === id) {
+          this.isSameConditionAlreadySelected(condition.id, condition.idUnique)
+          .then(_ => {
+            condition.isChecked = !isChecked;
+            localStorage.setItem('nextTaskConditions', JSON.stringify(this.nextTaskConditions));
+          }).catch(() => {
+            e.preventDefault();
+            this.showModal('These are exclusive conditions you cannot choose two choices from the same condition.');
+          });
         }
       });
     });
+  }
+
+  isSameConditionAlreadySelected(conditionId: string, conditionIdUnique: string) {
+    return new Promise<any>( (resolve, reject) => {
+      let error = false;
+      this.nextTaskConditions.forEach(item => {
+        item.conditions.forEach(condition => {
+          if (condition.id === conditionId && condition.idUnique !== conditionIdUnique && condition.isChecked) {
+            error = true;
+          }
+        });
+      });
+      error ? reject() : resolve();
+    });
+  }
+
+  showModal(msg: string) {
+    this.t.modal({
+      // the url to load for the iframe
+      url: '/modal',
+      accentColor: '#F2D600',
+      args: { msg },
+      // initial height for iframe
+      height: 100, // not used if fullscreen is true
+      // whether the modal should stretch to take up the whole screen
+      fullscreen: false,
+      // optional function to be called if user closes modal (via `X` or escape, etc)
+      callback: () => console.log('Goodbye.'),
+      // optional title for header chrome
+      title: 'Impossible action'
+    });
+  }
+
+  setLocalStorage(idList) {
+    localStorage.setItem('currentTaskId', idList);
     localStorage.setItem('nextTaskConditions', JSON.stringify(this.nextTaskConditions));
   }
 }

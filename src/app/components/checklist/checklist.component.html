@@ -9,7 +9,7 @@
                         <p>{{condition.name}}</p>
                         <label>
                             <input type="checkbox" [(ngModel)]="condition.isChecked" 
-                                (change)="onCheckboxChange(condition.isChecked, condition.name, condition.choice)" />
+                                (click)="onCheckboxChange($event, condition.isChecked, condition.idUnique)" />
                             {{condition.choice}}
                         </label>
                     </li>

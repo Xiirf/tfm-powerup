@@ -8,13 +8,14 @@ import { TrelloService } from './services/trello.service';
 import { HttpClientModule, HttpClientJsonpModule } from '@angular/common/http';
 import { CheckistComponent } from './components/checklist/checklist.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
+import { ModalComponent } from './components/modal/modal.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     AuthorizeComponent,
-    CheckistComponent
+    CheckistComponent,
+    ModalComponent
   ],
   imports: [
     BrowserModule,
@@ -22,7 +23,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     ReactiveFormsModule,
     AppRoutingModule,
     HttpClientModule,
-    HttpClientJsonpModule,
+    HttpClientJsonpModule
   ],
   providers: [TrelloService],
   bootstrap: [AppComponent]
