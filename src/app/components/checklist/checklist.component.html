@@ -1,0 +1,26 @@
+<ng-container *ngIf="(nextTaskConditions.length!==0); else noCondition" >
+    <ul>
+        <li *ngFor="let item of nextTaskConditions">
+          Task: {{item.nameTask}}
+          <p>Prerequisite:</p>
+            <ng-container *ngIf="!(item.conditions.length===0); else noPrerequisite" >
+                <ul>
+                    <li *ngFor="let condition of item.conditions">
+                        <p>{{condition.name}}</p>
+                        <label>
+                            <input type="checkbox" [(ngModel)]="condition.isChecked" 
+                                (click)="onCheckboxChange($event, condition.isChecked, condition.idUnique)" />
+                            {{condition.choice}}
+                        </label>
+                    </li>
+                </ul>
+            </ng-container>
+            <ng-template #noPrerequisite>
+                <p> There is no prerequisite for this task </p>
+            </ng-template>
+        </li>
+    </ul>
+</ng-container>
+<ng-template #noCondition>
+    <p> There is no next task </p>
+</ng-template>

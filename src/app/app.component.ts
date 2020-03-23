@@ -21,49 +21,6 @@ export class AppComponent implements OnInit {
     this.trelloInit();
   }
 
-  showIframeAuth(t) {
-    return t.popup({
-      title: 'Authorize to continue',
-      url: '/authorize'
-    });
-  }
-
-  showIframeNext(t, token) {
-    return t.card('all')
-      .then((card) => {
-        const idCard = card.id;
-        const idList = card.idList;
-        t.board('all')
-        .then((board) => {
-          const idBoard = board.id;
-          this.trelloService.getAllListBoard(idBoard, token)
-            .then((data) => {
-              console.log(data);
-              const index = data.findIndex(list => list.id === idList) + 1;
-              if (index < data.length) {
-                const newListId = data[index].id;
-                this.trelloService.moveCard(idCard, newListId, token)
-                .then((resp) => {
-                  console.log(resp);
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
-              } else {
-                t.hideCard();
-                return t.alert({
-                  message: 'Proceso terminado',
-                  duration: 6,
-                });
-              }
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        });
-      });
-  }
-
   trelloInit() {
     window.TrelloPowerUp.initialize({
       'card-buttons': (t, options) => {
@@ -90,10 +47,101 @@ export class AppComponent implements OnInit {
               }];
             }
           });
+      }, 'card-back-section': (t, options) => {
+        return t.getRestApi()
+          .getToken()
+          .then((token) => {
+            if (token) {
+              return [{
+                title: 'CheckList Conditions',
+                icon: this.NEXT_TASK, // Must be a gray icon, colored icons not allowed.
+                content: {
+                  type: 'iframe',
+                  url: t.signUrl('./checklist'),
+                  height: 250 // Max height is 500
+                }
+              }];
+            }
+          });
       }
     }, {
         appKey: 'a956c8bac233d7840d394f901dc85d16',
         appName: 'Next_Task'
     });
   }
+
+  showIframeAuth(t) {
+    return t.popup({
+      title: 'Authorize to continue',
+      url: '/authorize'
+    });
+  }
+
+  showIframeNext(t, token) {
+    // Récupération de la carte actuelle
+    return t.card('all')
+      .then((card) => {
+        const idCard = card.id;
+        // Récupération du board actuel
+        this.getNextTask()
+        .then((newListId) => {
+          this.trelloService.moveCard(idCard, newListId, token)
+            .then((resp) => {
+              console.log(resp);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }).catch((error) => {
+          if (!error) {
+            t.hideCard();
+            return t.alert({
+              message: 'Proceso terminado',
+              duration: 6,
+            });
+          } else {
+            console.log(error);
+            this.showModal(error, t);
+          }
+        });
+      });
+  }
+
+  getNextTask() {
+    return new Promise<any>( (resolve, reject) => {
+      // Get condition and next tasks
+      const conditions = JSON.parse(localStorage.getItem('nextTaskConditions'));
+      console.log(null, conditions);
+      if (!conditions) {
+        reject(null);
+      } else if (conditions.length === 1 && conditions[0].conditions.length === 0) {
+        resolve(conditions[0].idTask);
+      } else {
+        conditions.forEach(element => {
+          if (!(element.conditions.find(condition => condition.isChecked === false))) {
+            resolve(element.idTask);
+          }
+        });
+      }
+      reject('You have to end some prerequisite to have a next task !');
+    });
+  }
+
+  showModal(msg: string, t) {
+    t.modal({
+      // the url to load for the iframe
+      url: '/modal',
+      accentColor: '#F2D600',
+      args: { msg },
+      // initial height for iframe
+      height: 100, // not used if fullscreen is true
+      // whether the modal should stretch to take up the whole screen
+      fullscreen: false,
+      // optional function to be called if user closes modal (via `X` or escape, etc)
+      callback: () => console.log('Goodbye.'),
+      // optional title for header chrome
+      title: 'Impossible action'
+    });
+  }
+
 }
