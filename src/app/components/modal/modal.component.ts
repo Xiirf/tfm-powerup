@@ -1,7 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { TrelloService } from 'src/app/services/trello.service';
-import { ConditionsService } from 'src/app/services/conditions.service';
-import { rejects } from 'assert';
 import { environment } from 'src/environments/environment';
 declare let TrelloPowerUp: any;
 
