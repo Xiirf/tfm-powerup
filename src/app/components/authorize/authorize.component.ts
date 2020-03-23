@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { environment } from 'src/environments/environment';
 declare let TrelloPowerUp: any;
 
 @Component({
@@ -9,8 +10,8 @@ declare let TrelloPowerUp: any;
 
 export class AuthorizeComponent {
     t = TrelloPowerUp.iframe({
-        appKey: 'a956c8bac233d7840d394f901dc85d16',
-        appName: 'Next_Task'
+        appKey: environment.appKey,
+        appName: environment.appName
     });
 
     authorize() {

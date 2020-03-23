@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { TrelloService } from 'src/app/services/trello.service';
 import { ConditionsService } from 'src/app/services/conditions.service';
+import { environment } from 'src/environments/environment';
 declare let TrelloPowerUp: any;
 
 @Component({
@@ -15,8 +16,8 @@ export class CheckistComponent implements OnInit {
   nextTaskConditions = [];
 
   t = TrelloPowerUp.iframe({
-    appKey: 'a956c8bac233d7840d394f901dc85d16',
-    appName: 'Next_Task'
+    appKey: environment.appKey,
+    appName: environment.appName
   });
 
   constructor(private trelloService: TrelloService, private conditionsService: ConditionsService) { }

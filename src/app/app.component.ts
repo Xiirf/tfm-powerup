@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { TrelloService } from './services/trello.service';
+import { environment } from 'src/environments/environment';
 declare let TrelloPowerUp: any;
 declare let window: any;
 
@@ -65,8 +66,8 @@ export class AppComponent implements OnInit {
           });
       }
     }, {
-        appKey: 'a956c8bac233d7840d394f901dc85d16',
-        appName: 'Next_Task'
+        appKey: environment.appKey,
+        appName: environment.appName
     });
   }
 
