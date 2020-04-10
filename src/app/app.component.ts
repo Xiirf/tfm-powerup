@@ -111,7 +111,6 @@ export class AppComponent implements OnInit {
     return new Promise<any>( (resolve, reject) => {
       // Get condition and next tasks
       const conditions = JSON.parse(localStorage.getItem('nextTaskConditions'));
-      console.log(null, conditions);
       if (!conditions) {
         reject(null);
       } else if (conditions.length === 1 && conditions[0].conditions.length === 0) {
