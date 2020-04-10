@@ -4,13 +4,13 @@ import { TrelloService } from './trello.service';
 @Injectable({
   providedIn: 'root'
 })
-export class ConditionsService {
+export class DataService {
     constructor(private trelloService: TrelloService) { }
 
-    getCondition(listStart, token: string) {
+    getData(listStart, token: string, nameCard) {
         return new Promise<any>( (resolve, reject) => {
-          const idCardCondition = listStart.cards.find( elem => elem.name === 'Conditions_Data_Storage').id;
-          return this.trelloService.getComment(idCardCondition, token)
+          const idCardData = listStart.cards.find( elem => elem.name === nameCard).id;
+          return this.trelloService.getComment(idCardData, token)
             .then((comments) => {
               const conditions = this.clearCommentObject(comments);
               resolve(conditions);
@@ -19,6 +19,22 @@ export class ConditionsService {
               reject(error);
             });
         });
+    }
+
+    setData(listStart, token: string, nameCard, content: string) {
+      return new Promise<any>( (resolve, reject) => {
+        const idCardData = listStart.cards.find( elem => elem.name === nameCard).id;
+        return this.trelloService.getComment(idCardData, token)
+          .then((comments) => {
+            comments.foreach(async comment => {
+              await this.trelloService.deleteComment(idCardData, comment.id, token);
+            });
+            this.trelloService.createComment(idCardData, token, content);
+          })
+          .catch((error) => {
+            reject(error);
+          });
+      });
     }
 
     clearCommentObject(comments) {

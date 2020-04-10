@@ -1,4 +1,37 @@
 <ng-container *ngIf="(nextTaskConditions.length!==0); else noCondition" >
+    <div class="center">
+        <form class="example-form" (ngSubmit)="saveData()" [formGroup]="conditionForm">
+            <table class="example-full-width" cellspacing="0">
+                <tr>
+                    <td>
+                        <mat-form-field class="example-full-width">
+                            <mat-label>{{'actor.email' | translate}}</mat-label>
+                            <input matInput formControlName="dataValue" [errorStateMatcher]="matcher">
+                            <mat-error *ngIf="loginForm.controls.email.hasError('required')">
+                                {{'validator.required.email' | translate}}
+                            </mat-error>
+                        </mat-form-field>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <mat-form-field class="example-full-width">
+                            <mat-label>{{'actor.password' | translate}}</mat-label>
+                            <input matInput formControlName="password" [errorStateMatcher]="matcher" type="password">
+                            <mat-error *ngIf="loginForm.controls.password.hasError('required')">
+                                {{'validator.required.password' | translate}}
+                            </mat-error>
+                        </mat-form-field>
+                    </td>
+                </tr>
+            </table>
+            <p>
+                <button mat-stroked-button type="submit" [disabled]="!loginForm.valid">{{'button.login' | translate}}</button>
+            </p>
+        </form>
+    </div>
+
+
     <ul>
         <li *ngFor="let item of nextTaskConditions">
           Task: {{item.nameTask}}
