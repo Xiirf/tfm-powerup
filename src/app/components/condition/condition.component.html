@@ -1,0 +1,48 @@
+<ng-container *ngIf="nextCondition; else noCondition" >
+    <div class="center">
+        <form class="example-form" (ngSubmit)="saveData()" [formGroup]="conditionForm">
+            <table class="example-full-width" cellspacing="0">
+                <tr *ngIf="nextCondition.choice.type === number">
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>nextCondition.name</mat-label>
+                            <input matInput type="number" formControlName="dataValue" class="example-right-align">
+                            <span matPrefix>€&nbsp;</span>
+                          </mat-form-field>
+                    </td>
+                </tr>
+                <tr *ngIf="nextCondition.choice.type === boolean">
+                    <td>
+                        <mat-form-field>
+                            <mat-label>{{nextCondition.name}}</mat-label>
+                            <mat-select [(ngModel)]="dataValue" required>
+                                <mat-option value="true">Si</mat-option>
+                                <mat-option value="false">No</mat-option>
+                            </mat-select>
+                            <mat-error *ngIf="conditionForm.dataValue.hasError('required')">Por favor, elija un valor</mat-error>
+                        </mat-form-field>
+                    </td>
+                </tr>
+                <tr *ngIf="nextCondition.choice.type === string">
+                    <td>
+                        <mat-form-field>
+                            <mat-label>{{nextCondition.name}}</mat-label>
+                            <mat-select [(ngModel)]="dataValue" required>
+                              <mat-option *ngFor="let string of stringList" [value]="org">
+                                {{ string }}
+                              </mat-option>
+                            </mat-select>
+                            <mat-error *ngIf="conditionForm.dataValue.hasError('required')">Por favor, elija un valor</mat-error>
+                        </mat-form-field>
+                    </td>
+                </tr>
+            </table>
+            <p>
+                <button mat-stroked-button type="submit" [disabled]="!conditionForm.valid">Validar</button>
+            </p>
+        </form>
+    </div>
+</ng-container>
+<ng-template #noCondition>
+    <p> Se han rellenado todos los datos necesarios  </p>
+</ng-template>

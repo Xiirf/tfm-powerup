@@ -6,7 +6,7 @@ import { AppComponent } from './app.component';
 import { AuthorizeComponent } from './components/authorize/authorize.component';
 import { TrelloService } from './services/trello.service';
 import { HttpClientModule, HttpClientJsonpModule } from '@angular/common/http';
-import { CheckistComponent } from './components/checklist/checklist.component';
+import { ConditionComponent } from './components/condition/condition.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ModalComponent } from './components/modal/modal.component';
 
@@ -14,7 +14,7 @@ import { ModalComponent } from './components/modal/modal.component';
   declarations: [
     AppComponent,
     AuthorizeComponent,
-    CheckistComponent,
+    ConditionComponent,
     ModalComponent
   ],
   imports: [

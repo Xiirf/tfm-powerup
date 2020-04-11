@@ -6,18 +6,19 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 declare let TrelloPowerUp: any;
 
 @Component({
-  selector: 'app-checklist',
-  templateUrl: './checklist.component.html',
-  styleUrls: ['./checklist.component.scss']
+  selector: 'app-condition',
+  templateUrl: './condition.component.html',
+  styleUrls: ['./condition.component.scss']
 })
 
-export class CheckistComponent implements OnInit {
+export class ConditionComponent implements OnInit {
 
   idCard: string;
   firstList: any;
   token: string;
   nextTaskConditions = [];
   userData = [];
+  stringList = [];
   nextCondition: {
     name: string,
     choice: {
@@ -120,15 +121,33 @@ export class CheckistComponent implements OnInit {
   }
 
   getNextCondition() {
+    const tabVar = [];
+    if (this.userData.find(data => data.idCard === this.idCard)) {
+      this.userData.find(data => data.idCard === this.idCard).data.foreach(data => {
+        tabVar.push(data.nameVar);
+      });
+    }
     this.nextTaskConditions.forEach(taskCondition => {
+      this.nextCondition = null;
       let pos;
       taskCondition.conditions.foreach(condition => {
         if (!pos || condition.posCondition < pos) {
-          pos = condition.posCondition;
-          this.nextCondition = condition;
+          if (!tabVar.find(nameVar => nameVar === condition.choice.nameVar)) {
+            pos = condition.posCondition;
+            this.nextCondition = condition;
+          }
         }
       });
     });
+    // Set stringList if the nextCondition is a string
+    if (this.nextCondition.choice.type === 'string') {
+      this.stringList = [];
+      this.stringList.push(this.nextCondition.choice.value);
+      this.nextTaskConditions.forEach(taskCondition => {
+        this.stringList.push(taskCondition.conditions.find(condition => (condition.id === this.nextCondition.id) &&
+          (condition.idUnique !== this.nextCondition.idUnique)));
+      });
+    }
   }
 
   onSaveData() {

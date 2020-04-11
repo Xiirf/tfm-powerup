@@ -53,11 +53,11 @@ export class AppComponent implements OnInit {
           .then((token) => {
             if (token) {
               return [{
-                title: 'CheckList Conditions',
+                title: 'Conditions',
                 icon: this.NEXT_TASK, // Must be a gray icon, colored icons not allowed.
                 content: {
                   type: 'iframe',
-                  url: t.signUrl('./checklist'),
+                  url: t.signUrl('./condition'),
                   height: 250 // Max height is 500
                 }
               }];
