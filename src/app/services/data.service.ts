@@ -25,15 +25,12 @@ export class DataService {
     }
 
     setData(listStart, token: string, nameCard, content) {
-      console.log("IN Methode setData");
       return new Promise<any>( (resolve, reject) => {
         const idCardData = listStart.cards.find( elem => elem.name === nameCard).id;
         return this.trelloService.getComment(idCardData, token)
           .then((comments) => {
             let userData = [];
             if (comments.length > 0) {
-              console.log('IN');
-              console.log(comments);
               userData = this.clearCommentObject(comments[0].data.text);
             }
             comments.forEach(async comment => {
@@ -48,9 +45,6 @@ export class DataService {
                 data: content.data
               });
             }
-            // const contentData = this.clearCommentObject(JSON.stringify(userData));
-            // console.log("DATA");
-            // console.log(contentData);
             this.trelloService.createComment(idCardData, token, JSON.stringify(userData))
             .then(_ => {
               resolve();

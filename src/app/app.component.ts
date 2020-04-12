@@ -123,8 +123,8 @@ export class AppComponent implements OnInit {
         for (const element of conditions) {
           let conditionRespected = true;
           for (const condition of element.conditions) {
-            if (userData.data.find(data => data.nameVar === condition.choice.nameVar)) {
-              const value = userData.data.find(data => data.nameVar === condition.choice.nameVar).value;
+            if (userData.data.find(data => data.idCondition === condition.id)) {
+              const value = userData.data.find(data => data.idCondition === condition.id).value;
               conditionRespected = await this.checkConditionService.checkCondition(condition, value);
             } else {
               conditionRespected = false;

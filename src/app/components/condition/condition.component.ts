@@ -62,18 +62,18 @@ export class ConditionComponent implements OnInit {
           .then((card) => {
             this.idCard = card.id;
             const idList = card.idList;
-            // Récupération du board actuel
+            // Get current bord
             this.t.board('all')
               .then((board) => {
                 const idBoard = board.id;
-                // On récupère les listes du board actuel
+                // Get all lists in the current board
                 this.trelloService.getAllListBoard(idBoard, this.token)
                   .then(async (data) => {
                     this.firstList = data[0];
-                    // On récupère l'index de la liste suivante (tâches suivante)
+                    // Get index of the next list, it help to see if we are at the end or no
                     const index = data.findIndex(list => list.id === idList) + 1;
                     if (index < data.length) {
-                      // On récupère les conditions dans la carte conditions
+                      // Get conditions from Conditions_Data_Storage Card if localhost is not set
                       if (!localStorage.getItem('currentTaskId') || !(localStorage.getItem('currentTaskId') === idList)
                             || !localStorage.getItem('nextTaskConditions')) {
                         await this.dataService.getData(this.firstList, this.token, 'Conditions_Data_Storage')
@@ -85,8 +85,7 @@ export class ConditionComponent implements OnInit {
                               }
                             });
                           });
-                          // TODO delete + fonction
-                          // this.setTaskName(token);
+                          // Set localStorage with the new tasks
                           this.setLocalStorage(idList, 'Condition');
                         });
                       } else {
@@ -95,6 +94,7 @@ export class ConditionComponent implements OnInit {
                     } else {
                       localStorage.removeItem('nextTaskConditions');
                     }
+                    // If localstorage not set get userData from User_Data_Storage card
                     if (!localStorage.getItem('currentCardId') || !(localStorage.getItem('currentCardId') === this.idCard)
                             || !localStorage.getItem('userData')) {
                       await this.dataService.getData(this.firstList, this.token, 'User_Data_Storage')
@@ -109,7 +109,6 @@ export class ConditionComponent implements OnInit {
                     } else {
                       this.userData = JSON.parse(localStorage.getItem('userData'));
                     }
-                    // get next condition
                     this.getNextCondition();
                   })
                   .catch((error) => {
@@ -120,45 +119,41 @@ export class ConditionComponent implements OnInit {
       });
   }
 
+  // Get nextCondition to display
   async getNextCondition() {
-    console.log("USERDATA");
-    console.log(this.userData);
+    // First we check all variable already set by the currentUser
     const tabVar = [];
     let commonValue = false;
     if (this.userData.find(data => data.idCard === this.idCard)) {
-      console.log("IN");
       this.userData.find(data => data.idCard === this.idCard).data.forEach(data => {
         tabVar.push(data);
       });
     }
-    console.log("tabVar");
-    console.log(tabVar);
     this.nextCondition = null;
     for (const taskCondition of this.nextTaskConditions) {
-      console.log('TOUR2');
       let stop = false;
       let pos;
       if (tabVar.length > 0) {
+        // If the user have some variable value, we need to find the current condition who respect the user variable value
         for (const variable of tabVar) {
-          console.log('TOUR');
           if (!stop) {
-            if (taskCondition.conditions.find(condition => condition.choice.nameVar === variable.nameVar)) {
+            if (taskCondition.conditions.find(condition => condition.id === variable.idCondition)) {
               commonValue = true;
-              console.log(variable.nameVar);
-              console.log(taskCondition.conditions.find(condition => condition.choice.nameVar === variable.nameVar));
               stop = !(await this.checkConditionService.checkCondition(
-                taskCondition.conditions.find(condition => condition.choice.nameVar === variable.nameVar), variable.value));
-              console.log(stop);
+                taskCondition.conditions.find(condition => condition.id === variable.idCondition), variable.value));
               } else {
               stop = true;
             }
           }
         }
       }
+      // If we are in the good condition (according to userData) so the !stop will enter in the function
+      // If userData dont have common value with the actual condition so we can find the next condition in the method
+      // If userData are empty so we have to find the first condition, for this we use condition position
       if (!stop || !(tabVar.length > 0) || !commonValue) {
         taskCondition.conditions.forEach(condition => {
           if (!pos || condition.posCondition < pos) {
-            if (!tabVar.find(variable => variable.nameVar === condition.choice.nameVar)) {
+            if (!tabVar.find(variable => variable.idCondition === condition.id)) {
               pos = condition.posCondition;
               this.nextCondition = condition;
             }
@@ -178,14 +173,17 @@ export class ConditionComponent implements OnInit {
         }
       });
     }
-    console.log(this.nextCondition);
   }
 
   async saveData() {
+    // Get all data needed from form and nextCondition
     const dataVar = {
       nameVar: this.nextCondition.choice.nameVar,
-      value: this.conditionForm.get('dataValue').value
+      value: this.conditionForm.get('dataValue').value,
+      idCondition: this.nextCondition.id,
+      nameCondition: this.nextCondition.name
     };
+    // Push data in the userData
     if (!this.userData.find(data => data.idCard === this.idCard)) {
       this.userData.push({
         idCard: this.idCard,
@@ -193,54 +191,12 @@ export class ConditionComponent implements OnInit {
       });
     }
     this.userData.find(data => data.idCard === this.idCard).data.push(dataVar);
+    // Add them in the local storage
     localStorage.setItem('userData', JSON.stringify(this.userData));
+    // Add them in the card User_Data_Storage
     await this.dataService.setData(this.firstList, this.token, 'User_Data_Storage', JSON.stringify(this.userData));
     this.getNextCondition();
   }
-
-  /*setTaskName(token: string) {
-    this.nextTaskConditions.forEach(condition => {
-      this.trelloService.getListInformation(condition.idTask, token)
-        .then((list) => {
-          condition.nameTask = list.name;
-          localStorage.setItem('nextTaskConditions', JSON.stringify(this.nextTaskConditions));
-        });
-    });
-  }*/
-
-  /*onCheckboxChange(e, isChecked, id) {
-    this.nextTaskConditions.forEach(item => {
-      item.conditions.forEach(condition => {
-        if (condition.idUnique === id) {
-          this.isSameConditionAlreadySelected(condition.id, condition.idUnique)
-          .then(_ => {
-            condition.isChecked = !isChecked;
-            localStorage.setItem('nextTaskConditions', JSON.stringify(this.nextTaskConditions));
-          }).catch(() => {
-            e.preventDefault();
-            this.showModal('These are exclusive conditions you cannot choose two choices from the same condition.');
-          });
-        }
-      });
-    });
-  }*/
-
-  /*showModal(msg: string) {
-    this.t.modal({
-      // the url to load for the iframe
-      url: '/modal',
-      accentColor: '#F2D600',
-      args: { msg },
-      // initial height for iframe
-      height: 100, // not used if fullscreen is true
-      // whether the modal should stretch to take up the whole screen
-      fullscreen: false,
-      // optional function to be called if user closes modal (via `X` or escape, etc)
-      callback: () => console.log('Goodbye.'),
-      // optional title for header chrome
-      title: 'Impossible action'
-    });
-  }*/
 
   setLocalStorage(id: string, object: string) {
     if (object === 'Condition') {

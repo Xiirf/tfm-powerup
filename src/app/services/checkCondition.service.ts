@@ -14,7 +14,6 @@ export class CheckConditionService {
                   case '>':
                     if (!(value > valueDefault)) {
                         bool = false;
-                        console.log(bool);
                     }
                     break;
                   case '>=':
@@ -39,16 +38,10 @@ export class CheckConditionService {
                     break;
                 }
             } else if (condition.choice.type === 'string' || condition.choice.type === 'boolean') {
-                console.log("COUCOU");
-                console.log(value);
-                console.log(condition.choice.value);
-                console.log((value === condition.choice.value));
                 if (!(value === condition.choice.value)) {
                     bool = false;
                 }
             }
-            console.log('ICI');
-            console.log(bool);
             resolve(bool);
         });
       }

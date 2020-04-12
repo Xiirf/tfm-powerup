@@ -1,5 +1,20 @@
+<div *ngIf="userData?.length > 0">
+    <table class="example-full-width" cellspacing="0">
+        <ng-container *ngFor="let data of userData[0].data">
+            <tr>
+                <td>
+                    <label>{{data.nameCondition}}: </label>
+                </td>
+                <td>
+                    <label><strong>{{data.value}}</strong></label>
+                </td>
+            </tr>
+        </ng-container>
+    </table>
+</div>
+
 <ng-container *ngIf="nextCondition; else noCondition" >
-    <div class="center">
+    <div>
         <form class="example-form" (ngSubmit)="saveData()" [formGroup]="conditionForm">
             <table class="example-full-width" cellspacing="0">
                 <tr *ngIf="nextCondition.choice.type === 'number'">
