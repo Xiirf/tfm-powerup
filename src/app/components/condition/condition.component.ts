@@ -1,0 +1,210 @@
+import { Component, OnInit } from '@angular/core';
+import { TrelloService } from 'src/app/services/trello.service';
+import { DataService } from 'src/app/services/data.service';
+import { environment } from 'src/environments/environment';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { CheckConditionService } from 'src/app/services/checkCondition.service';
+declare let TrelloPowerUp: any;
+
+@Component({
+  selector: 'app-condition',
+  templateUrl: './condition.component.html',
+  styleUrls: ['./condition.component.scss']
+})
+
+export class ConditionComponent implements OnInit {
+
+  idCard: string;
+  firstList: any;
+  token: string;
+  nextTaskConditions = [];
+  userData = [];
+  stringList = [];
+  nextCondition: {
+    name: string,
+    choice: {
+      nameVar: string,
+      value: string,
+      type: string,
+      operator: string
+    },
+    id: string,
+    idUnique: string,
+    posCondition: number
+  }; // Define Model
+  conditionForm: FormGroup;
+
+  t = TrelloPowerUp.iframe({
+    appKey: environment.appKey,
+    appName: environment.appName
+  });
+
+  constructor(private trelloService: TrelloService,
+              private dataService: DataService,
+              private fb: FormBuilder,
+              private checkConditionService: CheckConditionService) {
+    this.createForm();
+  }
+
+  createForm(): void {
+    this.conditionForm = this.fb.group({
+      dataValue: ['', [Validators.required]]
+    });
+  }
+
+  ngOnInit(): void {
+    this.nextTaskConditions = [];
+    this.t.getRestApi()
+      .getToken()
+      .then((token) => {
+        this.token = token;
+        this.t.card('all')
+          .then((card) => {
+            this.idCard = card.id;
+            const idList = card.idList;
+            // Get current bord
+            this.t.board('all')
+              .then((board) => {
+                const idBoard = board.id;
+                // Get all lists in the current board
+                this.trelloService.getAllListBoard(idBoard, this.token)
+                  .then(async (data) => {
+                    this.firstList = data[0];
+                    // Get index of the next list, it help to see if we are at the end or no
+                    const index = data.findIndex(list => list.id === idList) + 1;
+                    if (index < data.length) {
+                      // Get conditions from Conditions_Data_Storage Card if localhost is not set
+                      if (!localStorage.getItem('currentTaskId') || !(localStorage.getItem('currentTaskId') === idList)
+                            || !localStorage.getItem('nextTaskConditions')) {
+                        await this.dataService.getData(this.firstList, this.token, 'Conditions_Data_Storage')
+                        .then((conditions) => {
+                          conditions.forEach(element => {
+                            element.lastTask.forEach((id) => {
+                              if (id === idList) {
+                                this.nextTaskConditions.push(element);
+                              }
+                            });
+                          });
+                          // Set localStorage with the new tasks
+                          this.setLocalStorage(idList, 'Condition');
+                        });
+                      } else {
+                        this.nextTaskConditions = JSON.parse(localStorage.getItem('nextTaskConditions'));
+                      }
+                    } else {
+                      localStorage.removeItem('nextTaskConditions');
+                    }
+                    // If localstorage not set get userData from User_Data_Storage card
+                    if (!localStorage.getItem('currentCardId') || !(localStorage.getItem('currentCardId') === this.idCard)
+                            || !localStorage.getItem('userData')) {
+                      await this.dataService.getData(this.firstList, this.token, 'User_Data_Storage')
+                      .then((dataUser) => {
+                        dataUser.forEach(element => {
+                          if (element.idCard === this.idCard) {
+                            this.userData.push(element);
+                          }
+                        });
+                        this.setLocalStorage(this.idCard, 'UserData');
+                      });
+                    } else {
+                      this.userData = JSON.parse(localStorage.getItem('userData'));
+                    }
+                    this.getNextCondition();
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                  });
+              });
+          });
+      });
+  }
+
+  // Get nextCondition to display
+  async getNextCondition() {
+    // First we check all variable already set by the currentUser
+    const tabVar = [];
+    let commonValue = false;
+    if (this.userData.find(data => data.idCard === this.idCard)) {
+      this.userData.find(data => data.idCard === this.idCard).data.forEach(data => {
+        tabVar.push(data);
+      });
+    }
+    this.nextCondition = null;
+    for (const taskCondition of this.nextTaskConditions) {
+      let stop = false;
+      let pos;
+      if (tabVar.length > 0) {
+        // If the user have some variable value, we need to find the current condition who respect the user variable value
+        for (const variable of tabVar) {
+          if (!stop) {
+            if (taskCondition.conditions.find(condition => condition.id === variable.idCondition)) {
+              commonValue = true;
+              stop = !(await this.checkConditionService.checkCondition(
+                taskCondition.conditions.find(condition => condition.id === variable.idCondition), variable.value));
+              } else {
+              stop = true;
+            }
+          }
+        }
+      }
+      // If we are in the good condition (according to userData) so the !stop will enter in the function
+      // If userData dont have common value with the actual condition so we can find the next condition in the method
+      // If userData are empty so we have to find the first condition, for this we use condition position
+      if (!stop || !(tabVar.length > 0) || !commonValue) {
+        taskCondition.conditions.forEach(condition => {
+          if (!pos || condition.posCondition < pos) {
+            if (!tabVar.find(variable => variable.idCondition === condition.id)) {
+              pos = condition.posCondition;
+              this.nextCondition = condition;
+            }
+          }
+        });
+      }
+    }
+    // Set stringList if the nextCondition is a string
+    if (this.nextCondition && ( this.nextCondition.choice.type === 'string' || this.nextCondition.choice.type === 'boolean')) {
+      this.stringList = [];
+      this.stringList.push(this.nextCondition.choice.value);
+      this.nextTaskConditions.forEach(taskCondition => {
+        if (taskCondition.conditions.find(condition => (condition.id === this.nextCondition.id) &&
+        (condition.idUnique !== this.nextCondition.idUnique))) {
+          this.stringList.push(taskCondition.conditions.find(condition => (condition.id === this.nextCondition.id) &&
+          (condition.idUnique !== this.nextCondition.idUnique)).choice.value);
+        }
+      });
+    }
+  }
+
+  async saveData() {
+    // Get all data needed from form and nextCondition
+    const dataVar = {
+      nameVar: this.nextCondition.choice.nameVar,
+      value: this.conditionForm.get('dataValue').value,
+      idCondition: this.nextCondition.id,
+      nameCondition: this.nextCondition.name
+    };
+    // Push data in the userData
+    if (!this.userData.find(data => data.idCard === this.idCard)) {
+      this.userData.push({
+        idCard: this.idCard,
+        data: []
+      });
+    }
+    this.userData.find(data => data.idCard === this.idCard).data.push(dataVar);
+    // Add them in the local storage
+    localStorage.setItem('userData', JSON.stringify(this.userData));
+    // Add them in the card User_Data_Storage
+    await this.dataService.setData(this.firstList, this.token, 'User_Data_Storage', JSON.stringify(this.userData));
+    this.getNextCondition();
+  }
+
+  setLocalStorage(id: string, object: string) {
+    if (object === 'Condition') {
+      localStorage.setItem('currentTaskId', id);
+      localStorage.setItem('nextTaskConditions', JSON.stringify(this.nextTaskConditions));
+    } else if (object === 'UserData') {
+      localStorage.setItem('currentCardId', id);
+      localStorage.setItem('userData', JSON.stringify(this.userData));
+    }
+  }
+}

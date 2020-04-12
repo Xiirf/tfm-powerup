@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { TrelloService } from './services/trello.service';
 import { environment } from 'src/environments/environment';
+import { CheckConditionService } from './services/checkCondition.service';
 declare let window: any;
 
 @Component({
@@ -15,7 +16,8 @@ export class AppComponent implements OnInit {
   NEXT_TASK = 'https://i.imgur.com/5xkAn5M.png';
   UNLOCK = 'https://i.imgur.com/mMlyvyN.png';
 
-  constructor(private trelloService: TrelloService) {}
+  constructor(private trelloService: TrelloService,
+              private checkConditionService: CheckConditionService) {}
 
   ngOnInit() {
     this.trelloInit();
@@ -53,11 +55,11 @@ export class AppComponent implements OnInit {
           .then((token) => {
             if (token) {
               return [{
-                title: 'CheckList Conditions',
+                title: 'Conditions',
                 icon: this.NEXT_TASK, // Must be a gray icon, colored icons not allowed.
                 content: {
                   type: 'iframe',
-                  url: t.signUrl('./checklist'),
+                  url: t.signUrl('./condition'),
                   height: 250 // Max height is 500
                 }
               }];
@@ -83,7 +85,7 @@ export class AppComponent implements OnInit {
       .then((card) => {
         const idCard = card.id;
         // Récupération du board actuel
-        this.getNextTask()
+        this.getNextTask(idCard)
         .then((newListId) => {
           this.trelloService.moveCard(idCard, newListId, token)
             .then((resp) => {
@@ -107,21 +109,34 @@ export class AppComponent implements OnInit {
       });
   }
 
-  getNextTask() {
-    return new Promise<any>( (resolve, reject) => {
+  async getNextTask(idCard: string) {
+    return new Promise<any>( async (resolve, reject) => {
       // Get condition and next tasks
       const conditions = JSON.parse(localStorage.getItem('nextTaskConditions'));
-      console.log(null, conditions);
+      const userData = JSON.parse(localStorage.getItem('userData')).find(data => data.idCard === idCard);
+      let nextElement;
       if (!conditions) {
         reject(null);
       } else if (conditions.length === 1 && conditions[0].conditions.length === 0) {
         resolve(conditions[0].idTask);
-      } else {
-        conditions.forEach(element => {
-          if (!(element.conditions.find(condition => condition.isChecked === false))) {
-            resolve(element.idTask);
+      } else if (userData) {
+        for (const element of conditions) {
+          let conditionRespected = true;
+          for (const condition of element.conditions) {
+            if (userData.data.find(data => data.idCondition === condition.id)) {
+              const value = userData.data.find(data => data.idCondition === condition.id).value;
+              conditionRespected = await this.checkConditionService.checkCondition(condition, value);
+            } else {
+              conditionRespected = false;
+            }
           }
-        });
+          if (conditionRespected) {
+            nextElement = element.idTask;
+          }
+        }
+        if (nextElement) {
+          resolve(nextElement);
+        }
       }
       reject('You have to end some prerequisite to have a next task !');
     });
