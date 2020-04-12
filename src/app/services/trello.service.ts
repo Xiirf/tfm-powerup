@@ -33,14 +33,14 @@ export class TrelloService {
     deleteComment(idCard: string, idComment: string, token: string): Promise<any> {
         const params = new HttpParams().set('token', token)
                                         .set('key', environment.appKey);
-        return this.http.get(`${this.root}/cards/${idCard}/actions/${idComment}/comments`, { params }).toPromise();
+        return this.http.delete(`${this.root}/cards/${idCard}/actions/${idComment}/comments`, { params }).toPromise();
     }
 
     createComment(idCard: string, token: string, content: string): Promise<any> {
         const params = new HttpParams().set('token', token)
                                         .set('key', environment.appKey)
                                         .set('text', content);
-        return this.http.post(`${this.root}/cards/${idCard}/actions/comments`, { params }).toPromise();
+        return this.http.post(`${this.root}/cards/${idCard}/actions/comments`, null, { params }).toPromise();
     }
 
     getListInformation(idList: string, token: string): Promise<any> {

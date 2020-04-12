@@ -3,6 +3,7 @@ import { TrelloService } from 'src/app/services/trello.service';
 import { DataService } from 'src/app/services/data.service';
 import { environment } from 'src/environments/environment';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { CheckConditionService } from 'src/app/services/checkCondition.service';
 declare let TrelloPowerUp: any;
 
 @Component({
@@ -40,7 +41,8 @@ export class ConditionComponent implements OnInit {
 
   constructor(private trelloService: TrelloService,
               private dataService: DataService,
-              private fb: FormBuilder) {
+              private fb: FormBuilder,
+              private checkConditionService: CheckConditionService) {
     this.createForm();
   }
 
@@ -98,11 +100,9 @@ export class ConditionComponent implements OnInit {
                       await this.dataService.getData(this.firstList, this.token, 'User_Data_Storage')
                       .then((dataUser) => {
                         dataUser.forEach(element => {
-                          element.idCard.forEach((id) => {
-                            if (id === this.idCard) {
-                              this.userData.push(element.data);
-                            }
-                          });
+                          if (element.idCard === this.idCard) {
+                            this.userData.push(element);
+                          }
                         });
                         this.setLocalStorage(this.idCard, 'UserData');
                       });
@@ -120,37 +120,68 @@ export class ConditionComponent implements OnInit {
       });
   }
 
-  getNextCondition() {
+  async getNextCondition() {
+    console.log("USERDATA");
+    console.log(this.userData);
     const tabVar = [];
+    let commonValue = false;
     if (this.userData.find(data => data.idCard === this.idCard)) {
-      this.userData.find(data => data.idCard === this.idCard).data.foreach(data => {
-        tabVar.push(data.nameVar);
+      console.log("IN");
+      this.userData.find(data => data.idCard === this.idCard).data.forEach(data => {
+        tabVar.push(data);
       });
     }
-    this.nextTaskConditions.forEach(taskCondition => {
-      this.nextCondition = null;
+    console.log("tabVar");
+    console.log(tabVar);
+    this.nextCondition = null;
+    for (const taskCondition of this.nextTaskConditions) {
+      console.log('TOUR2');
+      let stop = false;
       let pos;
-      taskCondition.conditions.foreach(condition => {
-        if (!pos || condition.posCondition < pos) {
-          if (!tabVar.find(nameVar => nameVar === condition.choice.nameVar)) {
-            pos = condition.posCondition;
-            this.nextCondition = condition;
+      if (tabVar.length > 0) {
+        for (const variable of tabVar) {
+          console.log('TOUR');
+          if (!stop) {
+            if (taskCondition.conditions.find(condition => condition.choice.nameVar === variable.nameVar)) {
+              commonValue = true;
+              console.log(variable.nameVar);
+              console.log(taskCondition.conditions.find(condition => condition.choice.nameVar === variable.nameVar));
+              stop = !(await this.checkConditionService.checkCondition(
+                taskCondition.conditions.find(condition => condition.choice.nameVar === variable.nameVar), variable.value));
+              console.log(stop);
+              } else {
+              stop = true;
+            }
           }
         }
-      });
-    });
+      }
+      if (!stop || !(tabVar.length > 0) || !commonValue) {
+        taskCondition.conditions.forEach(condition => {
+          if (!pos || condition.posCondition < pos) {
+            if (!tabVar.find(variable => variable.nameVar === condition.choice.nameVar)) {
+              pos = condition.posCondition;
+              this.nextCondition = condition;
+            }
+          }
+        });
+      }
+    }
     // Set stringList if the nextCondition is a string
-    if (this.nextCondition.choice.type === 'string') {
+    if (this.nextCondition && ( this.nextCondition.choice.type === 'string' || this.nextCondition.choice.type === 'boolean')) {
       this.stringList = [];
       this.stringList.push(this.nextCondition.choice.value);
       this.nextTaskConditions.forEach(taskCondition => {
-        this.stringList.push(taskCondition.conditions.find(condition => (condition.id === this.nextCondition.id) &&
-          (condition.idUnique !== this.nextCondition.idUnique)));
+        if (taskCondition.conditions.find(condition => (condition.id === this.nextCondition.id) &&
+        (condition.idUnique !== this.nextCondition.idUnique))) {
+          this.stringList.push(taskCondition.conditions.find(condition => (condition.id === this.nextCondition.id) &&
+          (condition.idUnique !== this.nextCondition.idUnique)).choice.value);
+        }
       });
     }
+    console.log(this.nextCondition);
   }
 
-  onSaveData() {
+  async saveData() {
     const dataVar = {
       nameVar: this.nextCondition.choice.nameVar,
       value: this.conditionForm.get('dataValue').value
@@ -163,8 +194,8 @@ export class ConditionComponent implements OnInit {
     }
     this.userData.find(data => data.idCard === this.idCard).data.push(dataVar);
     localStorage.setItem('userData', JSON.stringify(this.userData));
+    await this.dataService.setData(this.firstList, this.token, 'User_Data_Storage', JSON.stringify(this.userData));
     this.getNextCondition();
-    this.dataService.setData(this.firstList, this.token, 'User_Data_Storage', JSON.stringify(this.userData));
   }
 
   /*setTaskName(token: string) {

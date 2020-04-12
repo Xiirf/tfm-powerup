@@ -12,7 +12,10 @@ export class DataService {
           const idCardData = listStart.cards.find( elem => elem.name === nameCard).id;
           return this.trelloService.getComment(idCardData, token)
             .then((comments) => {
-              const conditions = this.clearCommentObject(comments);
+              let conditions = [];
+              if (comments.length !== 0) {
+                conditions = this.clearCommentObject(comments[0].data.text);
+              }
               resolve(conditions);
             })
             .catch((error) => {
@@ -21,15 +24,37 @@ export class DataService {
         });
     }
 
-    setData(listStart, token: string, nameCard, content: string) {
+    setData(listStart, token: string, nameCard, content) {
+      console.log("IN Methode setData");
       return new Promise<any>( (resolve, reject) => {
         const idCardData = listStart.cards.find( elem => elem.name === nameCard).id;
         return this.trelloService.getComment(idCardData, token)
           .then((comments) => {
-            comments.foreach(async comment => {
+            let userData = [];
+            if (comments.length > 0) {
+              console.log('IN');
+              console.log(comments);
+              userData = this.clearCommentObject(comments[0].data.text);
+            }
+            comments.forEach(async comment => {
               await this.trelloService.deleteComment(idCardData, comment.id, token);
             });
-            this.trelloService.createComment(idCardData, token, content);
+            content = this.clearCommentObject(content)[0];
+            if (userData.length > 0 && userData.find(data => data.idCard === content.idCard)) {
+              userData.find(data => data.idCard === content.idCard).data = content.data;
+            } else {
+              userData.push({
+                idCard: content.idCard,
+                data: content.data
+              });
+            }
+            // const contentData = this.clearCommentObject(JSON.stringify(userData));
+            // console.log("DATA");
+            // console.log(contentData);
+            this.trelloService.createComment(idCardData, token, JSON.stringify(userData))
+            .then(_ => {
+              resolve();
+            });
           })
           .catch((error) => {
             reject(error);
@@ -39,13 +64,14 @@ export class DataService {
 
     clearCommentObject(comments) {
         // Delete all \
-        let conditions = JSON.stringify(comments[0].data.text).replace(/\\/g, '');
+        let conditions = JSON.stringify(comments).replace(/\\/g, '');
         // Delete first "
         const firstIndex = conditions.indexOf('"');
         conditions = conditions.substring(firstIndex + 1);
-        // Delete last "
+          // Delete last "
         const lastIndex = conditions.lastIndexOf('"');
         conditions = conditions.substring(0, lastIndex);
+
         return JSON.parse(conditions);
     }
 }
