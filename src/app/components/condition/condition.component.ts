@@ -76,7 +76,7 @@ export class ConditionComponent implements OnInit {
                       // Get conditions from Conditions_Data_Storage Card if localhost is not set
                       if (!localStorage.getItem('currentTaskId') || !(localStorage.getItem('currentTaskId') === idList)
                             || !localStorage.getItem('nextTaskConditions')) {
-                        await this.dataService.getData(this.firstList, this.token, 'Conditions_Data_Storage')
+                        await this.dataService.getDataCondition(this.firstList, this.token)
                         .then((conditions) => {
                           conditions.forEach(element => {
                             element.lastTask.forEach((id) => {
@@ -97,13 +97,15 @@ export class ConditionComponent implements OnInit {
                     // If localstorage not set get userData from User_Data_Storage card
                     if (!localStorage.getItem('currentCardId') || !(localStorage.getItem('currentCardId') === this.idCard)
                             || !localStorage.getItem('userData')) {
-                      await this.dataService.getData(this.firstList, this.token, 'User_Data_Storage')
+                      await this.dataService.getDataUser(this.idCard)
                       .then((dataUser) => {
-                        dataUser.forEach(element => {
-                          if (element.idCard === this.idCard) {
-                            this.userData.push(element);
-                          }
-                        });
+                        if (dataUser) {
+                          dataUser.forEach(element => {
+                            if (element.idCard === this.idCard) {
+                              this.userData.push(element);
+                            }
+                          });
+                        }
                         this.setLocalStorage(this.idCard, 'UserData');
                       });
                     } else {
@@ -175,7 +177,7 @@ export class ConditionComponent implements OnInit {
     }
   }
 
-  async saveData() {
+  saveData() {
     // Get all data needed from form and nextCondition
     const dataVar = {
       nameVar: this.nextCondition.choice.nameVar,
@@ -194,7 +196,7 @@ export class ConditionComponent implements OnInit {
     // Add them in the local storage
     localStorage.setItem('userData', JSON.stringify(this.userData));
     // Add them in the card User_Data_Storage
-    await this.dataService.setData(this.firstList, this.token, 'User_Data_Storage', JSON.stringify(this.userData));
+    this.dataService.setData(this.idCard, this.userData);
     this.getNextCondition();
   }
 
