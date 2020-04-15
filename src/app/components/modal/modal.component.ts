@@ -8,7 +8,7 @@ declare let TrelloPowerUp: any;
   styleUrls: ['./modal.component.scss']
 })
 
-export class ModalComponent implements OnInit{
+export class ModalComponent implements OnInit {
 
   message: string;
 

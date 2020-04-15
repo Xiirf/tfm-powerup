@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { TrelloService } from 'src/app/services/trello.service';
 import { DataService } from 'src/app/services/data.service';
 import { environment } from 'src/environments/environment';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { CheckConditionService } from 'src/app/services/checkCondition.service';
 declare let TrelloPowerUp: any;
 
@@ -14,10 +14,15 @@ declare let TrelloPowerUp: any;
 
 export class ConditionComponent implements OnInit {
 
+  tempData = ['Online', 'Offline'];
+
   idCard: string;
   firstList: any;
   token: string;
   nextTaskConditions = [];
+  formCurrentTask = [];
+  formToComplete = [];
+
   userData = [];
   stringList = [];
   nextCondition: {
@@ -33,6 +38,8 @@ export class ConditionComponent implements OnInit {
     posCondition: number
   }; // Define Model
   conditionForm: FormGroup;
+  // Formulaire pour les variables a set de userTask
+  initVarForm: FormGroup;
 
   t = TrelloPowerUp.iframe({
     appKey: environment.appKey,
@@ -50,6 +57,7 @@ export class ConditionComponent implements OnInit {
     this.conditionForm = this.fb.group({
       dataValue: ['', [Validators.required]]
     });
+    this.initVarForm = this.fb.group({});
   }
 
   ngOnInit(): void {
@@ -75,7 +83,7 @@ export class ConditionComponent implements OnInit {
                     if (index < data.length) {
                       // Get conditions from Conditions_Data_Storage Card if localhost is not set
                       if (!localStorage.getItem('currentTaskId') || !(localStorage.getItem('currentTaskId') === idList)
-                            || !localStorage.getItem('nextTaskConditions')) {
+                            || !localStorage.getItem('nextTaskConditions') || !localStorage.getItem('formCurrentTask')) {
                         await this.dataService.getDataCondition(this.firstList, this.token)
                         .then((conditions) => {
                           conditions.forEach(element => {
@@ -84,12 +92,18 @@ export class ConditionComponent implements OnInit {
                                 this.nextTaskConditions.push(element);
                               }
                             });
+                            if (element.idTask === idList) {
+                              element.forms.forEach(form => {
+                                this.formCurrentTask.push(form);
+                              });
+                            }
                           });
                           // Set localStorage with the new tasks
                           this.setLocalStorage(idList, 'Condition');
                         });
                       } else {
                         this.nextTaskConditions = JSON.parse(localStorage.getItem('nextTaskConditions'));
+                        this.formCurrentTask = JSON.parse(localStorage.getItem('formCurrentTask'));
                       }
                     } else {
                       localStorage.removeItem('nextTaskConditions');
@@ -123,8 +137,10 @@ export class ConditionComponent implements OnInit {
 
   // Get nextCondition to display
   async getNextCondition() {
+    this.formToComplete = [];
     // First we check all variable already set by the currentUser
     const tabVar = [];
+    let allFormCompleted = true;
     let commonValue = false;
     if (this.userData.find(data => data.idCard === this.idCard)) {
       this.userData.find(data => data.idCard === this.idCard).data.forEach(data => {
@@ -132,67 +148,91 @@ export class ConditionComponent implements OnInit {
       });
     }
     this.nextCondition = null;
-    for (const taskCondition of this.nextTaskConditions) {
-      let stop = false;
-      let pos;
-      if (tabVar.length > 0) {
-        // If the user have some variable value, we need to find the current condition who respect the user variable value
-        for (const variable of tabVar) {
-          if (!stop) {
-            if (taskCondition.conditions.find(condition => condition.id === variable.idCondition)) {
-              commonValue = true;
-              stop = !(await this.checkConditionService.checkCondition(
-                taskCondition.conditions.find(condition => condition.id === variable.idCondition), variable.value));
-              } else {
-              stop = true;
+    this.formCurrentTask.forEach(form => {
+      if (!(tabVar.find(variable => variable.nameVar === form.nameVar))) {
+        allFormCompleted = false;
+        this.formToComplete.push(form);
+      }
+    });
+    if (allFormCompleted) {
+      for (const taskCondition of this.nextTaskConditions) {
+        let stop = false;
+        let pos;
+        if (tabVar.length > 0) {
+          // If the user have some variable value, we need to find the current condition who respect the user variable value
+          for (const variable of tabVar) {
+            if (!stop) {
+              if (taskCondition.conditions.find(condition => condition.choice.nameVar === variable.nameVar)) {
+                commonValue = true;
+                stop = !(await this.checkConditionService.checkCondition(
+                  taskCondition.conditions.find(condition => condition.choice.nameVar === variable.nameVar), variable.value));
+                } else {
+                stop = true;
+              }
             }
           }
         }
-      }
-      // If we are in the good condition (according to userData) so the !stop will enter in the function
-      // If userData dont have common value with the actual condition so we can find the next condition in the method
-      // If userData are empty so we have to find the first condition, for this we use condition position
-      if (!stop || !(tabVar.length > 0) || !commonValue) {
-        taskCondition.conditions.forEach(condition => {
-          if (!pos || condition.posCondition < pos) {
-            if (!tabVar.find(variable => variable.idCondition === condition.id)) {
-              pos = condition.posCondition;
-              this.nextCondition = condition;
+        // If we are in the good condition (according to userData) so the !stop will enter in the function
+        // If userData dont have common value with the actual condition so we can find the next condition in the method
+        // If userData are empty so we have to find the first condition, for this we use condition position
+        if (!stop || !(tabVar.length > 0) || !commonValue) {
+          taskCondition.conditions.forEach(condition => {
+            if (!pos || condition.posCondition < pos) {
+              if (!tabVar.find(variable => variable.nameVar === condition.choice.nameVar)) {
+                pos = condition.posCondition;
+                this.nextCondition = condition;
+              }
             }
+          });
+        }
+      }
+      // Set stringList if the nextCondition is a string
+      if (this.nextCondition && ( this.nextCondition.choice.type === 'string' || this.nextCondition.choice.type === 'boolean')) {
+        this.stringList = [];
+        this.stringList.push(this.nextCondition.choice.value);
+        this.nextTaskConditions.forEach(taskCondition => {
+          if (taskCondition.conditions.find(condition => (condition.id === this.nextCondition.id) &&
+          (condition.idUnique !== this.nextCondition.idUnique))) {
+            this.stringList.push(taskCondition.conditions.find(condition => (condition.id === this.nextCondition.id) &&
+            (condition.idUnique !== this.nextCondition.idUnique)).choice.value);
           }
         });
       }
-    }
-    // Set stringList if the nextCondition is a string
-    if (this.nextCondition && ( this.nextCondition.choice.type === 'string' || this.nextCondition.choice.type === 'boolean')) {
-      this.stringList = [];
-      this.stringList.push(this.nextCondition.choice.value);
-      this.nextTaskConditions.forEach(taskCondition => {
-        if (taskCondition.conditions.find(condition => (condition.id === this.nextCondition.id) &&
-        (condition.idUnique !== this.nextCondition.idUnique))) {
-          this.stringList.push(taskCondition.conditions.find(condition => (condition.id === this.nextCondition.id) &&
-          (condition.idUnique !== this.nextCondition.idUnique)).choice.value);
-        }
-      });
+    } else {
+      this.setInitVarForm();
     }
   }
 
   saveData() {
     // Get all data needed from form and nextCondition
-    const dataVar = {
-      nameVar: this.nextCondition.choice.nameVar,
-      value: this.conditionForm.get('dataValue').value,
-      idCondition: this.nextCondition.id,
-      nameCondition: this.nextCondition.name
-    };
+    const dataVar = [];
+    if (this.nextCondition) {
+      dataVar.push({
+        nameVar: this.nextCondition.choice.nameVar,
+        value: this.conditionForm.get('dataValue').value
+      });
+    } else if (this.formToComplete) {
+      for (let i = 0; i < this.formToComplete.length; i++) {
+        console.log("TEST");
+        console.log(this.initVarForm.get(this.formToComplete[i].nameVar).value);
+        dataVar.push({
+          nameVar: this.formToComplete[i].nameVar,
+          value: this.initVarForm.get(this.formToComplete[i].nameVar).value
+        });
+      }
+    }
+
     // Push data in the userData
     if (!this.userData.find(data => data.idCard === this.idCard)) {
       this.userData.push({
         idCard: this.idCard,
-        data: []
+        data: dataVar
+      });
+    } else {
+      dataVar.forEach(dataV => {
+        this.userData.find(data => data.idCard === this.idCard).data.push(dataV);
       });
     }
-    this.userData.find(data => data.idCard === this.idCard).data.push(dataVar);
     // Add them in the local storage
     localStorage.setItem('userData', JSON.stringify(this.userData));
     // Add them in the card User_Data_Storage
@@ -204,9 +244,17 @@ export class ConditionComponent implements OnInit {
     if (object === 'Condition') {
       localStorage.setItem('currentTaskId', id);
       localStorage.setItem('nextTaskConditions', JSON.stringify(this.nextTaskConditions));
+      localStorage.setItem('formCurrentTask', JSON.stringify(this.formCurrentTask));
     } else if (object === 'UserData') {
       localStorage.setItem('currentCardId', id);
       localStorage.setItem('userData', JSON.stringify(this.userData));
     }
+  }
+
+  setInitVarForm() {
+    this.initVarForm = this.fb.group({});
+    this.formToComplete.forEach(form => {
+      this.initVarForm.addControl(form.nameVar, new FormControl('', Validators.required));
+    });
   }
 }

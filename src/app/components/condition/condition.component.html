@@ -3,7 +3,7 @@
         <ng-container *ngFor="let data of userData[0].data">
             <tr>
                 <td>
-                    <label>{{data.nameCondition}}: </label>
+                    <label>{{data.nameVar}}: </label>
                 </td>
                 <td>
                     <label><strong>{{data.value}}</strong></label>
@@ -22,7 +22,6 @@
                         <mat-form-field>
                             <mat-label>{{nextCondition.name}}</mat-label>
                             <input matInput type="number" formControlName="dataValue" class="example-right-align">
-                            <span matPrefix>€&nbsp;</span>
                             <mat-error *ngIf="!conditionForm.valid">Por favor, elija un valor</mat-error>
                         </mat-form-field>
                     </td>
@@ -60,6 +59,48 @@
         </form>
     </div>
 </ng-container>
+
 <ng-template #noCondition>
-    <p> Se han rellenado todos los datos necesarios  </p>
+    <ng-container *ngIf="formToComplete.length > 0; else nothingToDo" >
+        <div>
+            <form class="example-form" (ngSubmit)="saveData()" [formGroup]="initVarForm">
+                <table class="example-full-width" cellspacing="0">
+                    <tr *ngFor="let form of formToComplete; let i = index">
+                        <td *ngIf="form.type === 'long'">
+                            <mat-form-field>
+                                <mat-label>{{form.label}}</mat-label>
+                                <input matInput type="number" [formControlName]="form.nameVar" class="example-right-align">
+                                <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor de tipo número</mat-error>
+                            </mat-form-field>
+                        </td>
+                        <td *ngIf="form.type === 'string'">
+                            <mat-form-field>
+                                <mat-label>{{form.label}}</mat-label>
+                                <mat-select [formControlName]="form.nameVar" required>
+                                    <mat-option *ngFor="let string of tempData" [value]="string">{{string}}</mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor</mat-error>
+                            </mat-form-field>
+                        </td>
+                        <td *ngIf="form.type === 'boolean'">
+                            <mat-form-field>
+                                <mat-label>{{form.label}}</mat-label>
+                                <mat-select [formControlName]="form.nameVar" required>
+                                    <mat-option [value]="true">Si</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor</mat-error>
+                            </mat-form-field>
+                        </td>
+                    </tr>
+                </table>
+                <p>
+                    <button mat-stroked-button type="submit" [disabled]="!initVarForm.valid">Validar</button>
+                </p>
+            </form>
+        </div>
+    </ng-container>
+    <ng-template #nothingToDo>
+        <p> Se han rellenado todos los datos necesarios  </p>
+    </ng-template>
 </ng-template>

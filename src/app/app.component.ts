@@ -89,7 +89,6 @@ export class AppComponent implements OnInit {
         .then((newListId) => {
           this.trelloService.moveCard(idCard, newListId, token)
             .then((resp) => {
-              console.log(resp);
             })
             .catch((error) => {
               console.log(error);
@@ -114,6 +113,14 @@ export class AppComponent implements OnInit {
       // Get condition and next tasks
       const conditions = JSON.parse(localStorage.getItem('nextTaskConditions'));
       const userData = JSON.parse(localStorage.getItem('userData')).find(data => data.idCard === idCard);
+      const formCurrentTask = JSON.parse(localStorage.getItem('formCurrentTask'));
+      if (userData && formCurrentTask) {
+        formCurrentTask.forEach(form => {
+          if (!(userData.data.find(variable => variable.nameVar === form.nameVar))) {
+            reject('You have to end some prerequisite to have a next task !');
+          }
+        });
+      }
       let nextElement;
       if (!conditions) {
         reject(null);
@@ -123,8 +130,8 @@ export class AppComponent implements OnInit {
         for (const element of conditions) {
           let conditionRespected = true;
           for (const condition of element.conditions) {
-            if (userData.data.find(data => data.idCondition === condition.id)) {
-              const value = userData.data.find(data => data.idCondition === condition.id).value;
+            if (userData.data.find(data => data.nameVar === condition.choice.nameVar)) {
+              const value = userData.data.find(data => data.nameVar === condition.choice.nameVar).value;
               conditionRespected = await this.checkConditionService.checkCondition(condition, value);
             } else {
               conditionRespected = false;
