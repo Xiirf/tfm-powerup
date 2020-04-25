@@ -85,7 +85,7 @@ export class AppComponent implements OnInit {
       .then((card) => {
         const idCard = card.id;
         // Récupération du board actuel
-        this.getNextTask(idCard)
+        this.getNextTask(idCard, token)
         .then((newListId) => {
           this.trelloService.moveCard(idCard, newListId, token)
             .then((resp) => {
@@ -108,44 +108,58 @@ export class AppComponent implements OnInit {
       });
   }
 
-  async getNextTask(idCard: string) {
+  async getNextTask(idCard: string, token: string) {
     return new Promise<any>( async (resolve, reject) => {
-      // Get condition and next tasks
-      const conditions = JSON.parse(localStorage.getItem('nextTaskConditions'));
-      const userData = JSON.parse(localStorage.getItem('userData')).find(data => data.idCard === idCard);
-      const formCurrentTask = JSON.parse(localStorage.getItem('formCurrentTask'));
-      if (userData && formCurrentTask) {
-        formCurrentTask.forEach(form => {
-          if (!(userData.data.find(variable => variable.nameVar === form.nameVar))) {
-            reject('You have to end some prerequisite to have a next task !');
-          }
-        });
+      let isPermissionOk = true;
+      // Check if they are user assigned to this task and if actual user is one of them
+      const cardMembersId = await this.trelloService.getCardMembersId(idCard, token);
+      if (cardMembersId.idMembers.length > 0) {
+        const idCurrentMember = await this.trelloService.getMemberIdByToken(token);
+        if (!cardMembersId.idMembers.includes(idCurrentMember.idMember)) {
+          isPermissionOk = false;
+        }
       }
-      let nextElement;
-      if (!conditions) {
-        reject(null);
-      } else if (conditions.length === 1 && conditions[0].conditions.length === 0) {
-        resolve(conditions[0].idTask);
-      } else if (userData) {
-        for (const element of conditions) {
-          let conditionRespected = true;
-          for (const condition of element.conditions) {
-            if (userData.data.find(data => data.nameVar === condition.choice.nameVar)) {
-              const value = userData.data.find(data => data.nameVar === condition.choice.nameVar).value;
-              conditionRespected = await this.checkConditionService.checkCondition(condition, value);
-            } else {
-              conditionRespected = false;
+
+      if (isPermissionOk) {
+        // Get condition and next tasks
+        const conditions = JSON.parse(localStorage.getItem('nextTaskConditions'));
+        const userData = JSON.parse(localStorage.getItem('userData')).find(data => data.idCard === idCard);
+        const formCurrentTask = JSON.parse(localStorage.getItem('formCurrentTask'));
+        if (userData && formCurrentTask) {
+          formCurrentTask.forEach(form => {
+            if (!(userData.data.find(variable => variable.nameVar === form.nameVar))) {
+              reject('You have to end some prerequisite to have a next task !');
+            }
+          });
+        }
+        let nextElement;
+        if (!conditions) {
+          reject(null);
+        } else if (conditions.length === 1 && conditions[0].conditions.length === 0) {
+          resolve(conditions[0].idTask);
+        } else if (userData) {
+          for (const element of conditions) {
+            let conditionRespected = true;
+            for (const condition of element.conditions) {
+              if (userData.data.find(data => data.nameVar === condition.choice.nameVar)) {
+                const value = userData.data.find(data => data.nameVar === condition.choice.nameVar).value;
+                conditionRespected = await this.checkConditionService.checkCondition(condition, value);
+              } else {
+                conditionRespected = false;
+              }
+            }
+            if (conditionRespected) {
+              nextElement = element.idTask;
             }
           }
-          if (conditionRespected) {
-            nextElement = element.idTask;
+          if (nextElement) {
+            resolve(nextElement);
           }
         }
-        if (nextElement) {
-          resolve(nextElement);
-        }
+        reject('You have to end some prerequisite to have a next task !');
+      } else {
+        reject('Alguien está asignado a esta tarea, sólo esta persona puede ir a la siguiente tarea');
       }
-      reject('You have to end some prerequisite to have a next task !');
     });
   }
 

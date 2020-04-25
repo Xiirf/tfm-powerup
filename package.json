@@ -9,6 +9,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "devMode": "ng serve --ssl true",
+    "devModeNgrok": "ng serve --host 0.0.0.0 --disableHostCheck true",
     "postinstall": "ng build  --aot --prod"
   },
   "private": true,

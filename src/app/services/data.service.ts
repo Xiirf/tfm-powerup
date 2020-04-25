@@ -36,13 +36,9 @@ export class DataService {
 
   getDataUser(idCard: string) {
     return new Promise<any>( (resolve, reject) => {
-      console.log(idCard);
       this.t.get(idCard, 'shared', 'userData')
       .then((data) => {
-        console.log('LA');
-        console.log(data);
         resolve(data);
-        // resolve(JSON.stringify(data, null, 2));
       })
       .catch(error => {
         reject(error);
