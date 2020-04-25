@@ -48,4 +48,31 @@ export class TrelloService {
                                         .set('key', environment.appKey);
         return this.http.get(`${this.root}/lists/${idList}`, { params }).toPromise();
     }
+
+    updateCardMember(idCard: string, idMembers: string, token: string): Promise<any> {
+        const params = new HttpParams().set('token', token)
+                                        .set('key', environment.appKey)
+                                        .set('idMembers', idMembers);
+        return this.http.put(`${this.root}/cards/${idCard}`, null, { params }).toPromise();
+    }
+
+    getUserId(idList: string, token: string): Promise<any> {
+        const params = new HttpParams().set('token', token)
+                                        .set('key', environment.appKey);
+        return this.http.get(`${this.root}/lists/${idList}`, { params }).toPromise();
+    }
+
+    getMemberIdByToken(token: string): Promise<any> {
+        const params = new HttpParams().set('token', token)
+                                        .set('key', environment.appKey)
+                                        .set('fields', 'idMember');
+        return this.http.get(`${this.root}/tokens/${token}`, { params }).toPromise();
+    }
+
+    getCardMembersId(idCard: string, token: string): Promise<any> {
+        const params = new HttpParams().set('token', token)
+                                        .set('key', environment.appKey)
+                                        .set('fields', 'idMembers');
+        return this.http.get(`${this.root}/cards/${idCard}`, { params }).toPromise();
+    }
 }

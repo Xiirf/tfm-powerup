@@ -22,6 +22,8 @@ export class ConditionComponent implements OnInit {
   nextTaskConditions = [];
   formCurrentTask = [];
   formToComplete = [];
+  // ID des persnnes à assigner
+  taskAssign: string;
 
   userData = [];
   stringList = [];
@@ -83,7 +85,9 @@ export class ConditionComponent implements OnInit {
                     if (index < data.length) {
                       // Get conditions from Conditions_Data_Storage Card if localhost is not set
                       if (!localStorage.getItem('currentTaskId') || !(localStorage.getItem('currentTaskId') === idList)
-                            || !localStorage.getItem('nextTaskConditions') || !localStorage.getItem('formCurrentTask')) {
+                            || !localStorage.getItem('nextTaskConditions') || !localStorage.getItem('formCurrentTask')
+                            || !localStorage.getItem('assignTask')) {
+                        this.taskAssign = '';
                         await this.dataService.getDataCondition(this.firstList, this.token)
                         .then((conditions) => {
                           conditions.forEach(element => {
@@ -96,14 +100,28 @@ export class ConditionComponent implements OnInit {
                               element.forms.forEach(form => {
                                 this.formCurrentTask.push(form);
                               });
+                              element.assigned.forEach(id => {
+                                if (this.taskAssign === '') {
+                                  this.taskAssign += id;
+                                } else {
+                                  this.taskAssign += ',' + id;
+                                }
+                              });
                             }
                           });
                           // Set localStorage with the new tasks
                           this.setLocalStorage(idList, 'Condition');
                         });
+                        await this.trelloService.updateCardMember(this.idCard, this.taskAssign, this.token)
+                          .then(resp => {
+                          })
+                          .catch(err => {
+                            console.log(err);
+                          });
                       } else {
                         this.nextTaskConditions = JSON.parse(localStorage.getItem('nextTaskConditions'));
                         this.formCurrentTask = JSON.parse(localStorage.getItem('formCurrentTask'));
+                        this.taskAssign = localStorage.getItem('assignTask');
                       }
                     } else {
                       localStorage.removeItem('nextTaskConditions');
@@ -203,41 +221,53 @@ export class ConditionComponent implements OnInit {
     }
   }
 
-  saveData() {
-    // Get all data needed from form and nextCondition
-    const dataVar = [];
-    if (this.nextCondition) {
-      dataVar.push({
-        nameVar: this.nextCondition.choice.nameVar,
-        value: this.conditionForm.get('dataValue').value
-      });
-    } else if (this.formToComplete) {
-      for (let i = 0; i < this.formToComplete.length; i++) {
-        console.log("TEST");
-        console.log(this.initVarForm.get(this.formToComplete[i].nameVar).value);
-        dataVar.push({
-          nameVar: this.formToComplete[i].nameVar,
-          value: this.initVarForm.get(this.formToComplete[i].nameVar).value
-        });
+  async saveData() {
+    let isPermissionOk = true;
+    // Check if they are user assigned to this task and if actual user is one of them
+    const cardMembersId = await this.trelloService.getCardMembersId(this.idCard, this.token);
+    if (cardMembersId.idMembers.length > 0) {
+      const idCurrentMember = await this.trelloService.getMemberIdByToken(this.token);
+      if (!cardMembersId.idMembers.includes(idCurrentMember.idMember)) {
+        isPermissionOk = false;
       }
     }
 
-    // Push data in the userData
-    if (!this.userData.find(data => data.idCard === this.idCard)) {
-      this.userData.push({
-        idCard: this.idCard,
-        data: dataVar
-      });
+    if (isPermissionOk) {
+      // Get all data needed from form and nextCondition
+      const dataVar = [];
+      if (this.nextCondition) {
+        dataVar.push({
+          nameVar: this.nextCondition.choice.nameVar,
+          value: this.conditionForm.get('dataValue').value
+        });
+      } else if (this.formToComplete) {
+        for (const form of this.formToComplete) {
+          dataVar.push({
+            nameVar: form.nameVar,
+            value: this.initVarForm.get(form.nameVar).value
+          });
+        }
+      }
+
+      // Push data in the userData
+      if (!this.userData.find(data => data.idCard === this.idCard)) {
+        this.userData.push({
+          idCard: this.idCard,
+          data: dataVar
+        });
+      } else {
+        dataVar.forEach(dataV => {
+          this.userData.find(data => data.idCard === this.idCard).data.push(dataV);
+        });
+      }
+      // Add them in the local storage
+      localStorage.setItem('userData', JSON.stringify(this.userData));
+      // Add them in the card User_Data_Storage
+      this.dataService.setData(this.idCard, this.userData);
+      this.getNextCondition();
     } else {
-      dataVar.forEach(dataV => {
-        this.userData.find(data => data.idCard === this.idCard).data.push(dataV);
-      });
+      this.showModal('Alguien está asignado a esta tarea, sólo esta persona puede rellenar los datos.', this.t);
     }
-    // Add them in the local storage
-    localStorage.setItem('userData', JSON.stringify(this.userData));
-    // Add them in the card User_Data_Storage
-    this.dataService.setData(this.idCard, this.userData);
-    this.getNextCondition();
   }
 
   setLocalStorage(id: string, object: string) {
@@ -245,6 +275,7 @@ export class ConditionComponent implements OnInit {
       localStorage.setItem('currentTaskId', id);
       localStorage.setItem('nextTaskConditions', JSON.stringify(this.nextTaskConditions));
       localStorage.setItem('formCurrentTask', JSON.stringify(this.formCurrentTask));
+      localStorage.setItem('assignTask', this.taskAssign);
     } else if (object === 'UserData') {
       localStorage.setItem('currentCardId', id);
       localStorage.setItem('userData', JSON.stringify(this.userData));
@@ -255,6 +286,21 @@ export class ConditionComponent implements OnInit {
     this.initVarForm = this.fb.group({});
     this.formToComplete.forEach(form => {
       this.initVarForm.addControl(form.nameVar, new FormControl('', Validators.required));
+    });
+  }
+
+  showModal(msg: string, t) {
+    t.modal({
+      // the url to load for the iframe
+      url: '/modal',
+      accentColor: '#F2D600',
+      args: { msg },
+      // initial height for iframe
+      height: 100, // not used if fullscreen is true
+      // whether the modal should stretch to take up the whole screen
+      fullscreen: false,
+      // optional title for header chrome
+      title: 'Impossible action'
     });
   }
 }
