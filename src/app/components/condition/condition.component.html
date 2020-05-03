@@ -76,9 +76,10 @@
                         <td *ngIf="form.type === 'string'">
                             <mat-form-field>
                                 <mat-label>{{form.label}}</mat-label>
-                                <mat-select [formControlName]="form.nameVar" required>
-                                    <mat-option *ngFor="let string of tempData" [value]="string">{{string}}</mat-option>
+                                <mat-select *ngIf="form.value.length > 0" [formControlName]="form.nameVar" required>
+                                    <mat-option *ngFor="let string of form.value" [value]="string">{{string}}</mat-option>
                                 </mat-select>
+                                <input matInput *ngIf="!(form.value.length > 0)" type="text" [formControlName]="form.nameVar" class="example-right-align">
                                 <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor</mat-error>
                             </mat-form-field>
                         </td>

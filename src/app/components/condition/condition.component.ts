@@ -14,8 +14,6 @@ declare let TrelloPowerUp: any;
 
 export class ConditionComponent implements OnInit {
 
-  tempData = ['Online', 'Offline'];
-
   idCard: string;
   firstList: any;
   token: string;
