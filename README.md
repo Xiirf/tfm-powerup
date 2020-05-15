@@ -2,10 +2,10 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 9.0.3.
 
-User interface to interact with a BPMN diagram using Camunda and BPMN.io. Allows to generate a Trello dashboard from the BPMN diagram. Using API https://github.com/Xiirf/tfm-bpmn-to-trello-api
+Trello's PowerUp which allows to automatically switch from one task to another process task from a BPMN diagram while respecting the conditions specified in the diagram. 
 
 ## Heroku deployment
-https://tfm-bpmn-to-trello.herokuapp.com/
+https://tfm-powerup-trello.herokuapp.com/
 
 # Installation
 
