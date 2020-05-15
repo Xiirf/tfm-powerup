@@ -28,11 +28,11 @@ Activate the following capacities:
 
 There are two ways to activate the PowerUp. The first one is automatic by following the tutorial of the following project: https://github.com/Xiirf/tfm-bpmn-to-trello in the Setting part of the README.
 The second is to add it manually once the Trello board has been created by following the instructions below:
-![alt text](https://i.imgur.com/xtMm1jO.png)
+![alt text](https://i.imgur.com/xtMm1jO.png)<br/>
 ![alt text](https://i.imgur.com/XDrtLOu.png)
 
 ### Authorize the PowerUp
-You have to add the url where you are using the app in your Trello origin (https://trello.com/app-key)
+You have to add the url where you are using the app in your Trello origin (https://trello.com/app-key)<br/>
 ![alt text](https://i.imgur.com/nMcRekp.png)
 
 ## Local launch
@@ -49,7 +49,7 @@ Environmental variables:<br/>
 
 # Utilisation
 Once the installation and the launch are done, if it is not already done, the following applications must be installed: https://github.com/Xiirf/tfm-bpmn-to-trello and https://github.com/Xiirf/tfm-bpmn-to-trello-api in order to generate the Trello table. 
-The PowerUp is active when you click on a card. In this case you will have a button that will appear in the menu on the right side of the map to automatically change the map.
+The PowerUp is active when you click on a card. In this case you will have a button that will appear in the menu on the right side of the map to automatically change the map.<br/>
 ![alt text](https://i.imgur.com/An75qZP.png)
 
 # Other information
