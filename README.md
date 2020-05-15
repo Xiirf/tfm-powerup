@@ -27,7 +27,7 @@ Activate the following capacities:
 ### Activate the PowerUp
 
 There are two ways to activate the PowerUp. The first one is automatic by following the tutorial of the following project: https://github.com/Xiirf/tfm-bpmn-to-trello in the Setting part of the README.
-The second is to add it manually once the Trello board has been created by following the instructions below:
+The second is to add it manually once the Trello board has been created by following the instructions below:<br/>
 ![alt text](https://i.imgur.com/xtMm1jO.png)<br/>
 ![alt text](https://i.imgur.com/XDrtLOu.png)
 
