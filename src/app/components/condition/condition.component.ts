@@ -19,7 +19,8 @@ export class ConditionComponent implements OnInit {
   token: string;
   nextTaskConditions = [];
   formCurrentTask = [];
-  formToComplete = [];
+  dataToDisplay = [];
+  // formToComplete = [];
   // ID des persnnes à assigner
   taskAssign: string;
 
@@ -153,23 +154,30 @@ export class ConditionComponent implements OnInit {
 
   // Get nextCondition to display
   async getNextCondition() {
-    this.formToComplete = [];
+    //this.formToComplete = [];
     // First we check all variable already set by the currentUser
     const tabVar = [];
     let allFormCompleted = true;
     let commonValue = false;
+    this.nextCondition = null;
     if (this.userData.find(data => data.idCard === this.idCard)) {
       this.userData.find(data => data.idCard === this.idCard).data.forEach(data => {
         tabVar.push(data);
       });
     }
-    this.nextCondition = null;
-    this.formCurrentTask.forEach(form => {
-      if (!(tabVar.find(variable => variable.nameVar === form.nameVar))) {
-        allFormCompleted = false;
-        this.formToComplete.push(form);
+    let tempVarAllFormCompleted = 0;
+    tabVar.forEach(variable => {
+      if ((this.formCurrentTask.find(form => form.nameVar === variable.nameVar))) {
+        tempVarAllFormCompleted++;
+        // this.formToComplete.push(form);
+      } else {
+        this.dataToDisplay.push(variable);
       }
     });
+    // Check if all var are completed from the actual list form
+    if (this.formCurrentTask.length > tempVarAllFormCompleted) {
+      allFormCompleted = false;
+    }
     if (allFormCompleted) {
       for (const taskCondition of this.nextTaskConditions) {
         let stop = false;
@@ -214,9 +222,8 @@ export class ConditionComponent implements OnInit {
           }
         });
       }
-    } else {
-      this.setInitVarForm();
     }
+    this.setInitVarForm();
   }
 
   async saveData() {
@@ -238,13 +245,13 @@ export class ConditionComponent implements OnInit {
           nameVar: this.nextCondition.choice.nameVar,
           value: this.conditionForm.get('dataValue').value
         });
-      } else if (this.formToComplete) {
-        for (const form of this.formToComplete) {
-          dataVar.push({
-            nameVar: form.nameVar,
-            value: this.initVarForm.get(form.nameVar).value
-          });
-        }
+      }
+      // Save form value
+      for (const form of this.formCurrentTask) {
+        dataVar.push({
+          nameVar: form.nameVar,
+          value: this.initVarForm.get(form.nameVar).value
+        });
       }
 
       // Push data in the userData
@@ -282,7 +289,7 @@ export class ConditionComponent implements OnInit {
 
   setInitVarForm() {
     this.initVarForm = this.fb.group({});
-    this.formToComplete.forEach(form => {
+    this.formCurrentTask.forEach(form => {
       this.initVarForm.addControl(form.nameVar, new FormControl('', Validators.required));
     });
   }
