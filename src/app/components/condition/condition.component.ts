@@ -41,6 +41,7 @@ export class ConditionComponent implements OnInit {
   conditionForm: FormGroup;
   // Formulaire pour les variables a set de userTask
   initVarForm: FormGroup;
+  isInitVarFormCreated = false;
 
   t = TrelloPowerUp.iframe({
     appKey: environment.appKey,
@@ -294,6 +295,7 @@ export class ConditionComponent implements OnInit {
       console.log(form.nameVar);
       this.initVarForm.addControl(form.nameVar, new FormControl('', Validators.required));
     });
+    this.isInitVarFormCreated = true;
   }
 
   showModal(msg: string, t) {

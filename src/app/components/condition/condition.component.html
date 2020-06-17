@@ -61,7 +61,7 @@
 </ng-container>
 
 <ng-template #noCondition>
-    <ng-container *ngIf="formCurrentTask.length > 0; else nothingToDo" >
+    <ng-container *ngIf="formCurrentTask.length > 0 && isInitVarFormCreated; else nothingToDo" >
         <div>
             <form class="example-form" (ngSubmit)="saveData()" [formGroup]="initVarForm">
                 <table class="example-full-width" cellspacing="0">
