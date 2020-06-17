@@ -154,7 +154,7 @@ export class ConditionComponent implements OnInit {
 
   // Get nextCondition to display
   async getNextCondition() {
-    //this.formToComplete = [];
+    // this.formToComplete = [];
     // First we check all variable already set by the currentUser
     const tabVar = [];
     let allFormCompleted = true;
@@ -178,6 +178,7 @@ export class ConditionComponent implements OnInit {
     if (this.formCurrentTask.length > tempVarAllFormCompleted) {
       allFormCompleted = false;
     }
+    this.setInitVarForm();
     if (allFormCompleted) {
       for (const taskCondition of this.nextTaskConditions) {
         let stop = false;
@@ -223,7 +224,6 @@ export class ConditionComponent implements OnInit {
         });
       }
     }
-    this.setInitVarForm();
   }
 
   async saveData() {
@@ -290,6 +290,8 @@ export class ConditionComponent implements OnInit {
   setInitVarForm() {
     this.initVarForm = this.fb.group({});
     this.formCurrentTask.forEach(form => {
+      console.log("test");
+      console.log(form.nameVar);
       this.initVarForm.addControl(form.nameVar, new FormControl('', Validators.required));
     });
   }
@@ -307,5 +309,16 @@ export class ConditionComponent implements OnInit {
       // optional title for header chrome
       title: 'Impossible action'
     });
+  }
+
+  // Method to disable form valid button
+  isValid() {
+    let isValueChanged = false;
+    this.formCurrentTask.forEach(form => {
+      if (this.initVarForm.get(form.nameVar).value !== form.value) {
+        isValueChanged = true;
+      }
+    });
+    return !this.initVarForm.valid && !isValueChanged;
   }
 }
