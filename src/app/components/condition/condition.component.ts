@@ -169,6 +169,7 @@ export class ConditionComponent implements OnInit {
     let tempVarAllFormCompleted = 0;
     tabVar.forEach(variable => {
       if ((this.formCurrentTask.find(form => form.nameVar === variable.nameVar))) {
+        this.formCurrentTask.find(form => form.nameVar === variable.nameVar).value = variable.value;
         tempVarAllFormCompleted++;
         // this.formToComplete.push(form);
       } else {
