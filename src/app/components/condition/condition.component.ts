@@ -169,7 +169,7 @@ export class ConditionComponent implements OnInit {
     let tempVarAllFormCompleted = 0;
     tabVar.forEach(variable => {
       if ((this.formCurrentTask.find(form => form.nameVar === variable.nameVar))) {
-        this.formCurrentTask.find(form => form.nameVar === variable.nameVar).value = variable.value;
+        this.formCurrentTask.find(form => form.nameVar === variable.nameVar).valueActualUser = variable.value;
         tempVarAllFormCompleted++;
         // this.formToComplete.push(form);
       } else {
@@ -263,6 +263,7 @@ export class ConditionComponent implements OnInit {
           data: dataVar
         });
       } else {
+        // TODO regarder si l'objet est bien save
         dataVar.forEach(dataV => {
           this.userData.find(data => data.idCard === this.idCard).data.push(dataV);
         });
@@ -318,7 +319,7 @@ export class ConditionComponent implements OnInit {
   isValid() {
     let isValueChanged = false;
     this.formCurrentTask.forEach(form => {
-      if (this.initVarForm.get(form.nameVar).value !== form.value) {
+      if (this.initVarForm.get(form.nameVar).value !== form.valueActualUser) {
         isValueChanged = true;
       }
     });

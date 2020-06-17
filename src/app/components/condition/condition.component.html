@@ -69,14 +69,14 @@
                         <td *ngIf="form.type === 'long'">
                             <mat-form-field>
                                 <mat-label>{{form.label}}</mat-label>
-                                <input matInput type="number" [ngModel]="form.value" [formControlName]="form.nameVar" class="example-right-align">
+                                <input matInput type="number" [ngModel]="form.valueActualUser" [formControlName]="form.nameVar" class="example-right-align">
                                 <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor de tipo número</mat-error>
                             </mat-form-field>
                         </td>
                         <td *ngIf="form.type === 'string' && form.value.length > 0">
                             <mat-form-field>
                                 <mat-label>{{form.label}}</mat-label>
-                                <mat-select [ngModel]="form.value" [formControlName]="form.nameVar" required>
+                                <mat-select [ngModel]="form.valueActualUser" [formControlName]="form.nameVar" required>
                                     <mat-option *ngFor="let string of form.value" [value]="string">{{string}}</mat-option>
                                 </mat-select>
                                 <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor</mat-error>
@@ -85,7 +85,7 @@
                         <td *ngIf="form.type === 'string' && !(form.value.length > 0)">
                             <mat-form-field>
                                 <mat-label>{{form.label}}</mat-label>
-                                <input matInput *ngIf="" type="text" [ngModel]="form.value" [formControlName]="form.nameVar" class="example-right-align">
+                                <input matInput type="text" [ngModel]="form.valueActualUser" [formControlName]="form.nameVar" class="example-right-align">
                                 <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor</mat-error>
                             </mat-form-field>
                         </td>
