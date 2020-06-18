@@ -157,6 +157,7 @@ export class ConditionComponent implements OnInit {
   async getNextCondition() {
     // Use an other var insteed of formCurrentTask to dont have template error (template is init before formCurrentTask value)
     this.formToComplete = [];
+    this.dataToDisplay = [];
     // First we check all variable already set by the currentUser
     const tabVar = [];
     let allFormCompleted = true;
