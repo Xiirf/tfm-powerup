@@ -156,7 +156,7 @@ export class ConditionComponent implements OnInit {
   // Get nextCondition to display
   async getNextCondition() {
     // Use an other var insteed of formCurrentTask to dont have template error (template is init before formCurrentTask value)
-    this.formToComplete = Object.assign([], this.formCurrentTask);
+    this.formToComplete = [];
     // First we check all variable already set by the currentUser
     const tabVar = [];
     let allFormCompleted = true;
@@ -170,13 +170,14 @@ export class ConditionComponent implements OnInit {
     let tempVarAllFormCompleted = 0;
     tabVar.forEach(variable => {
       if ((this.formCurrentTask.find(form => form.nameVar === variable.nameVar))) {
-        this.formToComplete.find(form => form.nameVar === variable.nameVar).valueActualUser = variable.value;
+        this.formCurrentTask.find(form => form.nameVar === variable.nameVar).valueActualUser = variable.value;
         tempVarAllFormCompleted++;
         // this.formToComplete.push(form);
       } else {
         this.dataToDisplay.push(variable);
       }
     });
+    this.formToComplete = Object.assign([], this.formCurrentTask);
     // Check if all var are completed from the actual list form
     if (this.formCurrentTask.length > tempVarAllFormCompleted) {
       allFormCompleted = false;
