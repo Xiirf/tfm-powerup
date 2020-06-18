@@ -301,7 +301,7 @@ export class ConditionComponent implements OnInit {
   setInitVarForm() {
     this.initVarForm = this.fb.group({});
     this.formToComplete.forEach(form => {
-      this.initVarForm.addControl(form.nameVar, new FormControl('', Validators.required));
+      this.initVarForm.addControl(form.nameVar, new FormControl(form.valueActualUser, Validators.required));
     });
     this.isInitVarFormCreated = true;
   }
