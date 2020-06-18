@@ -102,7 +102,7 @@
                     </tr>
                 </table>
                 <p>
-                    <button mat-stroked-button type="submit" [disabled]="isValid()">Validar</button>
+                    <button mat-stroked-button type="submit" [disabled]="!this.initVarForm.valid || !isValueChanged()">Validar</button>
                 </p>
             </form>
         </div>

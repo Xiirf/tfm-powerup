@@ -322,13 +322,13 @@ export class ConditionComponent implements OnInit {
   }
 
   // Method to disable form valid button
-  isValid() {
+  isValueChanged() {
     let isValueChanged = false;
     this.formToComplete.forEach(form => {
       if (this.initVarForm.get(form.nameVar).value !== form.valueActualUser) {
         isValueChanged = true;
       }
     });
-    return !this.initVarForm.valid && !isValueChanged;
+    return isValueChanged;
   }
 }
