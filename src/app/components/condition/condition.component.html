@@ -61,11 +61,11 @@
 </ng-container>
 
 <ng-template #noCondition>
-    <ng-container *ngIf="formCurrentTask.length > 0 && isInitVarFormCreated; else nothingToDo" >
+    <ng-container *ngIf="formToComplete.length > 0 && isInitVarFormCreated; else nothingToDo" >
         <div>
             <form class="example-form" (ngSubmit)="saveData()" [formGroup]="initVarForm">
                 <table class="example-full-width" cellspacing="0">
-                    <tr *ngFor="let form of formCurrentTask; let i = index">
+                    <tr *ngFor="let form of formToComplete; let i = index">
                         <td *ngIf="form.type === 'long'">
                             <mat-form-field>
                                 <mat-label>{{form.label}}</mat-label>
@@ -92,7 +92,7 @@
                         <td *ngIf="form.type === 'boolean'">
                             <mat-form-field>
                                 <mat-label>{{form.label}}</mat-label>
-                                <mat-select [ngModel]="form.value" [formControlName]="form.nameVar" required>
+                                <mat-select [ngModel]="form.valueActualUser" [formControlName]="form.nameVar" required>
                                     <mat-option [value]="true">Si</mat-option>
                                     <mat-option [value]="false">No</mat-option>
                                 </mat-select>
