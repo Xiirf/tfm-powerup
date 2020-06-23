@@ -60,7 +60,7 @@
     </div>
 </ng-container> -->
 
-<ng-template #noCondition>
+<!-- <ng-template #noCondition> -->
     <ng-container *ngIf="formToComplete.length > 0 && isInitVarFormCreated; else nothingToDo" >
         <div>
             <form class="example-form" (ngSubmit)="saveData()" [formGroup]="initVarForm">
@@ -110,4 +110,4 @@
     <ng-template #nothingToDo>
         <p> Se han rellenado todos los datos necesarios  </p>
     </ng-template>
-</ng-template>
+<!-- </ng-template> -->
