@@ -1,6 +1,6 @@
 <div *ngIf="userData?.length > 0">
     <table class="example-full-width" cellspacing="0">
-        <ng-container *ngFor="let data of userData[0].data">
+        <ng-container *ngFor="let data of dataToDisplay">
             <tr>
                 <td>
                     <label>{{data.nameVar}}: </label>
@@ -61,7 +61,7 @@
 </ng-container>
 
 <ng-template #noCondition>
-    <ng-container *ngIf="formToComplete.length > 0; else nothingToDo" >
+    <ng-container *ngIf="formToComplete.length > 0 && isInitVarFormCreated; else nothingToDo" >
         <div>
             <form class="example-form" (ngSubmit)="saveData()" [formGroup]="initVarForm">
                 <table class="example-full-width" cellspacing="0">
@@ -73,13 +73,19 @@
                                 <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor de tipo número</mat-error>
                             </mat-form-field>
                         </td>
-                        <td *ngIf="form.type === 'string'">
+                        <td *ngIf="form.type === 'string' && form.value.length > 0">
                             <mat-form-field>
                                 <mat-label>{{form.label}}</mat-label>
-                                <mat-select *ngIf="form.value.length > 0" [formControlName]="form.nameVar" required>
+                                <mat-select [formControlName]="form.nameVar" required>
                                     <mat-option *ngFor="let string of form.value" [value]="string">{{string}}</mat-option>
                                 </mat-select>
-                                <input matInput *ngIf="!(form.value.length > 0)" type="text" [formControlName]="form.nameVar" class="example-right-align">
+                                <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor</mat-error>
+                            </mat-form-field>
+                        </td>
+                        <td *ngIf="form.type === 'string' && !(form.value.length > 0)">
+                            <mat-form-field>
+                                <mat-label>{{form.label}}</mat-label>
+                                <input matInput type="text" [formControlName]="form.nameVar" class="example-right-align">
                                 <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor</mat-error>
                             </mat-form-field>
                         </td>
@@ -96,7 +102,7 @@
                     </tr>
                 </table>
                 <p>
-                    <button mat-stroked-button type="submit" [disabled]="!initVarForm.valid">Validar</button>
+                    <button mat-stroked-button type="submit" [disabled]="!this.initVarForm.valid || !isValueChanged()">Validar</button>
                 </p>
             </form>
         </div>

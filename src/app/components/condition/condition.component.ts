@@ -19,6 +19,7 @@ export class ConditionComponent implements OnInit {
   token: string;
   nextTaskConditions = [];
   formCurrentTask = [];
+  dataToDisplay = [];
   formToComplete = [];
   // ID des persnnes à assigner
   taskAssign: string;
@@ -40,6 +41,7 @@ export class ConditionComponent implements OnInit {
   conditionForm: FormGroup;
   // Formulaire pour les variables a set de userTask
   initVarForm: FormGroup;
+  isInitVarFormCreated = false;
 
   t = TrelloPowerUp.iframe({
     appKey: environment.appKey,
@@ -153,23 +155,35 @@ export class ConditionComponent implements OnInit {
 
   // Get nextCondition to display
   async getNextCondition() {
+    // Use an other var insteed of formCurrentTask to dont have template error (template is init before formCurrentTask value)
     this.formToComplete = [];
+    this.dataToDisplay = [];
     // First we check all variable already set by the currentUser
     const tabVar = [];
     let allFormCompleted = true;
     let commonValue = false;
+    this.nextCondition = null;
     if (this.userData.find(data => data.idCard === this.idCard)) {
       this.userData.find(data => data.idCard === this.idCard).data.forEach(data => {
         tabVar.push(data);
       });
     }
-    this.nextCondition = null;
-    this.formCurrentTask.forEach(form => {
-      if (!(tabVar.find(variable => variable.nameVar === form.nameVar))) {
-        allFormCompleted = false;
-        this.formToComplete.push(form);
+    let tempVarAllFormCompleted = 0;
+    tabVar.forEach(variable => {
+      if ((this.formCurrentTask.find(form => form.nameVar === variable.nameVar))) {
+        this.formCurrentTask.find(form => form.nameVar === variable.nameVar).valueActualUser = variable.value;
+        tempVarAllFormCompleted++;
+        // this.formToComplete.push(form);
+      } else {
+        this.dataToDisplay.push(variable);
       }
     });
+    this.formToComplete = Object.assign([], this.formCurrentTask);
+    // Check if all var are completed from the actual list form
+    if (this.formCurrentTask.length > tempVarAllFormCompleted) {
+      allFormCompleted = false;
+    }
+    this.setInitVarForm();
     if (allFormCompleted) {
       for (const taskCondition of this.nextTaskConditions) {
         let stop = false;
@@ -214,8 +228,6 @@ export class ConditionComponent implements OnInit {
           }
         });
       }
-    } else {
-      this.setInitVarForm();
     }
   }
 
@@ -238,7 +250,8 @@ export class ConditionComponent implements OnInit {
           nameVar: this.nextCondition.choice.nameVar,
           value: this.conditionForm.get('dataValue').value
         });
-      } else if (this.formToComplete) {
+      } else {
+        // Save form value
         for (const form of this.formToComplete) {
           dataVar.push({
             nameVar: form.nameVar,
@@ -254,8 +267,14 @@ export class ConditionComponent implements OnInit {
           data: dataVar
         });
       } else {
+        // TODO regarder si l'objet est bien save
         dataVar.forEach(dataV => {
-          this.userData.find(data => data.idCard === this.idCard).data.push(dataV);
+          if (this.userData.find(data => data.idCard === this.idCard).data.find(dataSaved => dataSaved.nameVar === dataV.nameVar)) {
+            this.userData.find(data => data.idCard === this.idCard).data
+              .find(dataSaved => dataSaved.nameVar === dataV.nameVar).value = dataV.value;
+          } else {
+            this.userData.find(data => data.idCard === this.idCard).data.push(dataV);
+          }
         });
       }
       // Add them in the local storage
@@ -283,8 +302,9 @@ export class ConditionComponent implements OnInit {
   setInitVarForm() {
     this.initVarForm = this.fb.group({});
     this.formToComplete.forEach(form => {
-      this.initVarForm.addControl(form.nameVar, new FormControl('', Validators.required));
+      this.initVarForm.addControl(form.nameVar, new FormControl(form.valueActualUser, Validators.required));
     });
+    this.isInitVarFormCreated = true;
   }
 
   showModal(msg: string, t) {
@@ -300,5 +320,16 @@ export class ConditionComponent implements OnInit {
       // optional title for header chrome
       title: 'Impossible action'
     });
+  }
+
+  // Method to disable form valid button
+  isValueChanged() {
+    let isValueChanged = false;
+    this.formToComplete.forEach(form => {
+      if (this.initVarForm.get(form.nameVar).value !== form.valueActualUser) {
+        isValueChanged = true;
+      }
+    });
+    return isValueChanged;
   }
 }
