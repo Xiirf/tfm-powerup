@@ -133,7 +133,7 @@ export class AppComponent implements OnInit {
           });
         }
         let nextElement;
-        if (!conditions) {
+        if (!conditions || conditions.length === 0) {
           const nextTask = JSON.parse(localStorage.getItem('nextTask'));
           if (nextTask) {
             resolve(nextTask);

@@ -103,7 +103,8 @@ export class ConditionComponent implements OnInit {
                               // only if we are not in the last task
                               if (this.nextTaskConditions.length === 0) {
                                 if (element.nextTask.length > 0) {
-                                  localStorage.setItem('nextTask', JSON.stringify(element.nextTask[0]));
+                                  const nextTask = element.nextTask[0];
+                                  localStorage.setItem('nextTask', JSON.stringify(nextTask));
                                 }
                               }
                               // Get form for the current task
@@ -172,7 +173,7 @@ export class ConditionComponent implements OnInit {
     // First we check all variable already set by the currentUser
     const tabVar = [];
     let allFormCompleted = true;
-    let commonValue = false;
+    // let commonValue = false;
     this.nextCondition = null;
     if (this.userData.find(data => data.idCard === this.idCard)) {
       this.userData.find(data => data.idCard === this.idCard).data.forEach(data => {
