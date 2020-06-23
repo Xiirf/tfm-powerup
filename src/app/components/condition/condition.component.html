@@ -64,7 +64,7 @@
     <ng-container *ngIf="formToComplete.length > 0 && isInitVarFormCreated; else nothingToDo" >
         <div>
             <form class="example-form" (ngSubmit)="saveData()" [formGroup]="initVarForm">
-                <table class="full-width" cellspacing="0">
+                <table class="example-full-width" cellspacing="0">
                     <tr *ngFor="let form of formToComplete; let i = index">
                         <td *ngIf="form.type === 'long'">
                             <mat-form-field class="example-full-width">
