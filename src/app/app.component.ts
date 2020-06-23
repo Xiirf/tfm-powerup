@@ -140,21 +140,18 @@ export class AppComponent implements OnInit {
           } else {
             reject(null);
           }
-        } else if (conditions.length === 1 && conditions[0].conditions.length === 0) {
-          resolve(conditions[0].idTask);
         } else if (userData) {
           for (const element of conditions) {
             let conditionRespected = true;
-            for (const condition of element.conditions) {
-              if (userData.data.find(data => data.nameVar === condition.choice.nameVar)) {
-                const value = userData.data.find(data => data.nameVar === condition.choice.nameVar).value;
-                conditionRespected = await this.checkConditionService.checkCondition(condition, value);
-              } else {
-                conditionRespected = false;
-              }
+            if (userData.data.find(data => data.nameVar === element.choice.nameVar)) {
+              const value = userData.data.find(data => data.nameVar === element.choice.nameVar).value;
+              conditionRespected = await this.checkConditionService.checkCondition(element, value);
+            } else {
+              conditionRespected = false;
             }
+
             if (conditionRespected) {
-              nextElement = element.idTask;
+              nextElement = element.destination;
             }
           }
           if (nextElement) {
