@@ -134,7 +134,12 @@ export class AppComponent implements OnInit {
         }
         let nextElement;
         if (!conditions) {
-          reject(null);
+          const nextTask = JSON.parse(localStorage.getItem('nextTask'));
+          if (nextTask) {
+            resolve(nextTask);
+          } else {
+            reject(null);
+          }
         } else if (conditions.length === 1 && conditions[0].conditions.length === 0) {
           resolve(conditions[0].idTask);
         } else if (userData) {

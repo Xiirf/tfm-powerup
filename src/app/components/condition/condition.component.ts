@@ -88,18 +88,29 @@ export class ConditionComponent implements OnInit {
                             || !localStorage.getItem('nextTaskConditions') || !localStorage.getItem('formCurrentTask')
                             || !localStorage.getItem('assignTask')) {
                         this.taskAssign = '';
+                        // Get all condition from the card comment
                         await this.dataService.getDataCondition(this.firstList, this.token)
                         .then((conditions) => {
                           conditions.forEach(element => {
-                            element.lastTask.forEach((id) => {
-                              if (id === idList) {
-                                this.nextTaskConditions.push(element);
-                              }
-                            });
                             if (element.idTask === idList) {
+                              // Delete last next task information
+                              localStorage.removeItem('nextTask');
+                              // Get nextTask + their condition
+                              element.conditions.forEach(cond => {
+                                this.nextTaskConditions.push(cond);
+                              });
+                              // If there is no condition then we only have one nextTask
+                              // only if we are not in the last task
+                              if (this.nextTaskConditions.length === 0) {
+                                if (element.nextTask.length > 0) {
+                                  localStorage.setItem('nextTask', JSON.stringify(element.nextTask[0]));
+                                }
+                              }
+                              // Get form for the current task
                               element.forms.forEach(form => {
                                 this.formCurrentTask.push(form);
                               });
+                              // Get assigned person
                               element.assigned.forEach(id => {
                                 if (this.taskAssign === '') {
                                   this.taskAssign += id;
@@ -184,6 +195,7 @@ export class ConditionComponent implements OnInit {
       allFormCompleted = false;
     }
     this.setInitVarForm();
+    /*
     if (allFormCompleted) {
       for (const taskCondition of this.nextTaskConditions) {
         let stop = false;
@@ -228,7 +240,7 @@ export class ConditionComponent implements OnInit {
           }
         });
       }
-    }
+    }*/
   }
 
   async saveData() {
