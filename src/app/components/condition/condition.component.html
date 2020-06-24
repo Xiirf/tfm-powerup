@@ -13,101 +13,52 @@
     </table>
 </div>
 
-<!-- <ng-container *ngIf="nextCondition; else noCondition" >
+<ng-container *ngIf="formToComplete.length > 0 && isInitVarFormCreated; else nothingToDo" >
     <div>
-        <form class="example-form" (ngSubmit)="saveData()" [formGroup]="conditionForm">
+        <form class="example-form" (ngSubmit)="saveData()" [formGroup]="initVarForm">
             <table class="full-width" cellspacing="0">
-                <tr *ngIf="nextCondition.choice.type === 'number'">
-                    <td>
+                <tr *ngFor="let form of formToComplete; let i = index">
+                    <td *ngIf="form.type === 'long'">
                         <mat-form-field class="example-full-width">
-                            <mat-label>{{nextCondition.name}}</mat-label>
-                            <input matInput type="number" formControlName="dataValue" class="example-right-align">
-                            <mat-error *ngIf="!conditionForm.valid">Por favor, elija un valor</mat-error>
+                            <mat-label>{{form.label}}</mat-label>
+                            <input matInput type="number" [formControlName]="form.nameVar" class="example-right-align">
+                            <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor de tipo número</mat-error>
                         </mat-form-field>
                     </td>
-                </tr>
-                <tr *ngIf="nextCondition.choice.type === 'boolean'">
-                    <td>
+                    <td *ngIf="form.type === 'string' && form.value.length > 0">
                         <mat-form-field class="example-full-width">
-                            <mat-label>{{nextCondition.name}}</mat-label>
-                            <mat-select formControlName="dataValue" required>
-                                <mat-option *ngFor="let string of stringList" [value]="string">
-                                  {{ string }}
-                                </mat-option>
-                              </mat-select>
-                            <mat-error *ngIf="!conditionForm.valid">Por favor, elija un valor</mat-error>
-                        </mat-form-field>
-                    </td>
-                </tr>
-                <tr *ngIf="nextCondition.choice.type === 'string'">
-                    <td>
-                        <mat-form-field class="example-full-width">
-                            <mat-label>{{nextCondition.name}}</mat-label>
-                            <mat-select formControlName="dataValue" required>
-                              <mat-option *ngFor="let string of stringList" [value]="string">
-                                {{ string }}
-                              </mat-option>
+                            <mat-label>{{form.label}}</mat-label>
+                            <mat-select [formControlName]="form.nameVar" required>
+                                <mat-option *ngFor="let string of form.value" [value]="string">{{string}}</mat-option>
                             </mat-select>
-                            <mat-error *ngIf="!conditionForm.valid">Por favor, elija un valor</mat-error>
+                            <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor</mat-error>
+                        </mat-form-field>
+                    </td>
+                    <td *ngIf="form.type === 'string' && !(form.value.length > 0)">
+                        <mat-form-field class="example-full-width">
+                            <mat-label>{{form.label}}</mat-label>
+                            <input matInput type="text" [formControlName]="form.nameVar" class="example-right-align">
+                            <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor</mat-error>
+                        </mat-form-field>
+                    </td>
+                    <td *ngIf="form.type === 'boolean'">
+                        <mat-form-field class="example-full-width">
+                            <mat-label>{{form.label}}</mat-label>
+                            <mat-select [formControlName]="form.nameVar" required>
+                                <mat-option [value]="true">Si</mat-option>
+                                <mat-option [value]="false">No</mat-option>
+                            </mat-select>
+                            <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor</mat-error>
                         </mat-form-field>
                     </td>
                 </tr>
             </table>
             <p>
-                <button mat-stroked-button type="submit" [disabled]="!conditionForm.valid">Validar</button>
+                <button mat-stroked-button type="submit" [disabled]="!this.initVarForm.valid || !isValueChanged()">Validar</button>
             </p>
         </form>
     </div>
-</ng-container> -->
-
-<!-- <ng-template #noCondition> -->
-    <ng-container *ngIf="formToComplete.length > 0 && isInitVarFormCreated; else nothingToDo" >
-        <div>
-            <form class="example-form" (ngSubmit)="saveData()" [formGroup]="initVarForm">
-                <table class="full-width" cellspacing="0">
-                    <tr *ngFor="let form of formToComplete; let i = index">
-                        <td *ngIf="form.type === 'long'">
-                            <mat-form-field class="example-full-width">
-                                <mat-label>{{form.label}}</mat-label>
-                                <input matInput type="number" [formControlName]="form.nameVar" class="example-right-align">
-                                <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor de tipo número</mat-error>
-                            </mat-form-field>
-                        </td>
-                        <td *ngIf="form.type === 'string' && form.value.length > 0">
-                            <mat-form-field class="example-full-width">
-                                <mat-label>{{form.label}}</mat-label>
-                                <mat-select [formControlName]="form.nameVar" required>
-                                    <mat-option *ngFor="let string of form.value" [value]="string">{{string}}</mat-option>
-                                </mat-select>
-                                <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor</mat-error>
-                            </mat-form-field>
-                        </td>
-                        <td *ngIf="form.type === 'string' && !(form.value.length > 0)">
-                            <mat-form-field class="example-full-width">
-                                <mat-label>{{form.label}}</mat-label>
-                                <input matInput type="text" [formControlName]="form.nameVar" class="example-right-align">
-                                <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor</mat-error>
-                            </mat-form-field>
-                        </td>
-                        <td *ngIf="form.type === 'boolean'">
-                            <mat-form-field class="example-full-width">
-                                <mat-label>{{form.label}}</mat-label>
-                                <mat-select [formControlName]="form.nameVar" required>
-                                    <mat-option [value]="true">Si</mat-option>
-                                    <mat-option [value]="false">No</mat-option>
-                                </mat-select>
-                                <mat-error *ngIf="!initVarForm.valid">Por favor, elija un valor</mat-error>
-                            </mat-form-field>
-                        </td>
-                    </tr>
-                </table>
-                <p>
-                    <button mat-stroked-button type="submit" [disabled]="!this.initVarForm.valid || !isValueChanged()">Validar</button>
-                </p>
-            </form>
-        </div>
-    </ng-container>
-    <ng-template #nothingToDo>
-        <p> Se han rellenado todos los datos necesarios  </p>
-    </ng-template>
-<!-- </ng-template> -->
+</ng-container>
+<ng-template #nothingToDo>
+    <p> Se han rellenado todos los datos necesarios  </p>
+</ng-template>
