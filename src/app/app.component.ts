@@ -163,7 +163,11 @@ export class AppComponent implements OnInit {
               // Check if the current user have completed the condition variable
               if (userData.data.find(data => data.nameVar === element.choice.nameVar)) {
                 const value = userData.data.find(data => data.nameVar === element.choice.nameVar).value;
-                conditionRespected = await this.checkConditionService.checkCondition(element, value);
+                // If this return false one time so we cant go to the this destination
+                const temp = await this.checkConditionService.checkCondition(element, value);
+                if (!temp) {
+                  conditionRespected = false;
+                }
               } else {
                 conditionRespected = false;
               }
