@@ -27,6 +27,9 @@ export class CheckConditionService {
                     }
                     break;
                   case '<=':
+                    console.log(value);
+                    console.log(valueDefault);
+                    console.log(value <= valueDefault);
                     if (!(value <= valueDefault)) {
                         bool = false;
                     }
