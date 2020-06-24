@@ -86,7 +86,7 @@ export class ConditionComponent implements OnInit {
                     this.firstList = data[0];
                     // Get index of the next list, it help to see if we are at the end or no
                     const index = data.findIndex(list => list.id === idList) + 1;
-                    if (index < data.length) {
+                    if (index <= data.length) {
                       // Get conditions from Conditions_Data_Storage Card if localhost is not set
                       if (!localStorage.getItem('currentTaskId') || !(localStorage.getItem('currentTaskId') === idList)
                             || !localStorage.getItem('nextTaskConditions') || !localStorage.getItem('formCurrentTask')
