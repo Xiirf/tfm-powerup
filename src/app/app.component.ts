@@ -167,9 +167,9 @@ export class AppComponent implements OnInit {
               } else {
                 conditionRespected = false;
               }
-              if (conditionRespected) {
-                nextElement = element.destination;
-              }
+            }
+            if (conditionRespected) {
+              nextElement = dest;
             }
           }
           // Send the destination
