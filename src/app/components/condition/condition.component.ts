@@ -90,7 +90,7 @@ export class ConditionComponent implements OnInit {
                       // Get conditions from Conditions_Data_Storage Card if localhost is not set
                       if (!localStorage.getItem('currentTaskId') || !(localStorage.getItem('currentTaskId') === idList)
                             || !localStorage.getItem('nextTaskConditions') || !localStorage.getItem('formCurrentTask')
-                            || !localStorage.getItem('assignTask')) {
+                            || !localStorage.getItem('assignTask') || !localStorage.getItem('nextTask')) {
                         this.taskAssign = '';
                         // Get all condition from the card comment
                         await this.dataService.getDataCondition(this.firstList, this.token)
@@ -105,10 +105,8 @@ export class ConditionComponent implements OnInit {
                               });
                               // If there is no condition then we only have one nextTask
                               // only if we are not in the last task
-                              if (this.nextTaskConditions.length === 0) {
-                                if (element.nextTask.length > 0) {
-                                  localStorage.setItem('nextTask', JSON.stringify(element.nextTask));
-                                }
+                              if (element.nextTask.length > 0) {
+                                localStorage.setItem('nextTask', JSON.stringify(element.nextTask));
                               }
                               // Get form for the current task
                               element.forms.forEach(form => {
