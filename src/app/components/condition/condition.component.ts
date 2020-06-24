@@ -92,13 +92,13 @@ export class ConditionComponent implements OnInit {
                             || !localStorage.getItem('nextTaskConditions') || !localStorage.getItem('formCurrentTask')
                             || !localStorage.getItem('assignTask') || !localStorage.getItem('nextTask')) {
                         this.taskAssign = '';
+                        // Delete last next task information
+                        localStorage.removeItem('nextTask');
                         // Get all condition from the card comment
                         await this.dataService.getDataCondition(this.firstList, this.token)
                         .then((conditions) => {
                           conditions.forEach(element => {
                             if (element.idTask === idList) {
-                              // Delete last next task information
-                              localStorage.removeItem('nextTask');
                               // Get nextTask + their condition
                               element.conditions.forEach(cond => {
                                 this.nextTaskConditions.push(cond);
