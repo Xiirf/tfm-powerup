@@ -1,0 +1,8 @@
+.full-width {
+    width: 100%;
+}
+
+::ng-deep body > app-root > app-condition > div > form > table > tr > td > mat-form-field {
+    width: 100%;
+}
+

@@ -23,6 +23,7 @@ export class AppComponent implements OnInit {
     this.trelloInit();
   }
 
+  // Trello function calling all capacities
   trelloInit() {
     window.TrelloPowerUp.initialize({
       'card-buttons': (t, options) => {
@@ -72,6 +73,7 @@ export class AppComponent implements OnInit {
     });
   }
 
+  // Frame to the auth
   showIframeAuth(t) {
     return t.popup({
       title: 'Authorize to continue',
@@ -79,6 +81,7 @@ export class AppComponent implements OnInit {
     });
   }
 
+  // Method to move the card after a click on "NextTask"
   showIframeNext(t, token) {
     // Récupération de la carte actuelle
     return t.card('all')
@@ -121,10 +124,15 @@ export class AppComponent implements OnInit {
       }
 
       if (isPermissionOk) {
+        // get all possible nextTask
+        const nextTask = JSON.parse(localStorage.getItem('nextTask'));
         // Get condition and next tasks
         const conditions = JSON.parse(localStorage.getItem('nextTaskConditions'));
+        // Get user Data
         const userData = JSON.parse(localStorage.getItem('userData')).find(data => data.idCard === idCard);
+        // Get form for the current task
         const formCurrentTask = JSON.parse(localStorage.getItem('formCurrentTask'));
+        // Check if the form is completed
         if (userData && formCurrentTask) {
           formCurrentTask.forEach(form => {
             if (!(userData.data.find(variable => variable.nameVar === form.nameVar))) {
@@ -133,25 +141,42 @@ export class AppComponent implements OnInit {
           });
         }
         let nextElement;
-        if (!conditions) {
-          reject(null);
-        } else if (conditions.length === 1 && conditions[0].conditions.length === 0) {
-          resolve(conditions[0].idTask);
+        // In this case we dont have conditions
+        if (!conditions || conditions.length === 0) {
+          // Check if we have a next task, in this case we can only have one task
+          if (nextTask) {
+            resolve(nextTask[0]);
+          } else {
+            // No more task
+            reject(null);
+          }
         } else if (userData) {
-          for (const element of conditions) {
+          // In this case we have conditions
+          // All destination are in nextTask
+          // Check for each destination if one have all conditions completed
+          for (const dest of nextTask) {
             let conditionRespected = true;
-            for (const condition of element.conditions) {
-              if (userData.data.find(data => data.nameVar === condition.choice.nameVar)) {
-                const value = userData.data.find(data => data.nameVar === condition.choice.nameVar).value;
-                conditionRespected = await this.checkConditionService.checkCondition(condition, value);
+            // Get all condition for the tested destination
+            const conditionsNextTask = conditions.filter(element => element.destination === dest);
+            // Loop on all condition of the tested destination
+            for (const element of conditionsNextTask) {
+              // Check if the current user have completed the condition variable
+              if (userData.data.find(data => data.nameVar === element.choice.nameVar)) {
+                const value = userData.data.find(data => data.nameVar === element.choice.nameVar).value;
+                // If this return false one time so we cant go to the this destination
+                const temp = await this.checkConditionService.checkCondition(element, value);
+                if (!temp) {
+                  conditionRespected = false;
+                }
               } else {
                 conditionRespected = false;
               }
             }
             if (conditionRespected) {
-              nextElement = element.idTask;
+              nextElement = dest;
             }
           }
+          // Send the destination
           if (nextElement) {
             resolve(nextElement);
           }
