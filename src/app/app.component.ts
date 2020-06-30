@@ -136,7 +136,7 @@ export class AppComponent implements OnInit {
         if (userData && formCurrentTask) {
           formCurrentTask.forEach(form => {
             if (!(userData.data.find(variable => variable.nameVar === form.nameVar))) {
-              reject('You have to end some prerequisite to have a next task !');
+              reject('¡ Debe llenar el formulario !');
             }
           });
         }
@@ -181,7 +181,7 @@ export class AppComponent implements OnInit {
             resolve(nextElement);
           }
         }
-        reject('You have to end some prerequisite to have a next task !');
+        reject('¡Tienes que terminar algún prerrequisito para tener una próxima tarea!');
       } else {
         reject('Alguien está asignado a esta tarea, sólo esta persona puede ir a la siguiente tarea');
       }
